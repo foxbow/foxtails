@@ -200,16 +200,8 @@ function getCocktailRecipe( $cockid ) {
 	else return "Nummern raten ist dohv!";
 }
 
-/*
-SELECT Orders.OrderID, Customers.CustomerName, Orders.OrderDate
-FROM Orders
-INNER JOIN Customers
-ON Orders.CustomerID=Customers.CustomerID;
-*/
-
 function getCocktailParts( $cockid ) {
-// 	$res = db_exec( "SELECT recipe.measure, recipe.count, part.name, part.comment, part.type FROM recipe INNER JOIN part ON recipe.part=part.id WHERE recipe.cockid=?;", array( $cockid ) );
-	$res = db_exec( "SELECT measure, count, name, comment, type, part FROM recipe INNER JOIN part ON recipe.part=part.id WHERE recipe.cockid=? ORDER BY part.type;", array( $cockid ) );
+	$res = db_exec( "SELECT measure, count, name, comment, type, part FROM recipe INNER JOIN part ON recipe.part=part.id WHERE recipe.cockid=? ORDER BY part.type ASC,measure ASC,count DESC;", array( $cockid ) );
 	return $res;
 }
 

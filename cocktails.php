@@ -21,6 +21,23 @@ function linkList( $edit ) {
 <a href='?cmd=card'>Karte</a></div>";
 }
 
+function printAmount( $parts ){
+	$amount=0;
+	$vierzig=0;
+	$zwanzig=0;
+	$alc=0;
+	foreach( $parts as $part ) {
+		if( $part['measure'] == 1 ){
+			$amount += $part['count'];
+			if( $part['type'] == 0 ) $alc += $part['count']*40;
+			if( $part['type'] == 1 ) $alc += $part['count']*20;
+		}	
+	}
+// Eiswürfel?
+//	$amount+=2;
+	return "( ".$amount."cl / ".round($alc/$amount)."% )";
+}
+
 function printPart( $type, $name ) {
 	$desc= "<span style='";
 	switch( $type ) {
@@ -42,17 +59,14 @@ function printPart( $type, $name ) {
 }
 
 function getRecipe( $cockid ) {
-//	global $admin;
 	$name   = getCocktailName( $cockid );
 	$type	= getCocktailType( $cockid );
 	$parts  = getCocktailParts( $cockid );
 	$recipe = getCocktailRecipe( $cockid );
 
-//	if( $admin ) $desc =  "<a href='?cmd=edit&id=$cockid'><h3>$name</h3></a>\n";
-//	else $desc =  "<h3>$name</h3>\n";
 	$desc =  "<a href='?cmd=edit&id=$cockid'><h3>$name</h3></a>\n";
 
-	$desc .= "<b>$type</b><br>\n";
+	$desc .= "<b>$type</b> ".printAmount($parts)."<br>\n";
 	$desc .= "<center><table border='0'>";
 	foreach( $parts as $part ) {
 		$measure  = getMeasure( $part['measure'] );
@@ -72,7 +86,7 @@ function getShortList( $cock ) {
 	$parts  = getCocktailParts( $cock['id'] );
 
 	$desc = "<p>".$cock['id']." - ";
-	$desc .= "<a href='?cmd=show&id=".$cock['id']."'><b>$name</b></a><br>\n";
+	$desc .= "<a href='?cmd=show&id=".$cock['id']."'><b>$name</b></a> ".printAmount($parts)."<br>\n";
 	$desc .= "<i>( ";
 	$first=1;
 	foreach( $parts as $part ) {
@@ -92,16 +106,20 @@ function listCocktails( $cocktails, $cols=4 ) {
 	foreach( $cocktails as $cocktail ) {
 		if( 0 == $col ) echo "<tr>";
 		echo "<td style='padding:5px;background-color:#eee;'><a href='?cmd=show&id=".$cocktail['id']."'><b>".$cocktail['name']."</b></a>";
-		if( isset( $cocktail['type'] ) && $cocktail['type'] != 1 ){
-			$type = getTypeName( $cocktail['type'] );
-			echo "<br><i>$type</i>";
+		if( isset( $cocktail['rank'] ) ) {
+			echo " ";
+			for( $j=0; $j<$cocktail['rank']; $j++ ) echo "*";
 		}
 
-		if( isset( $cocktail['rank'] ) ) {
-			echo " [";
-			for( $j=0; $j<$cocktail['rank']; $j++ ) echo "*";
-			echo "]";
+		echo "<br>";
+		if( isset( $cocktail['type'] ) && $cocktail['type'] != 1 ){
+			$type = getTypeName( $cocktail['type'] );
+			echo "<i>$type</i> ";
 		}
+
+		echo printAmount( getCocktailParts( $cocktail['id'] ) );
+
+
 		echo "</td>";
 		$col++;
 		if( $cols == $col ) {
