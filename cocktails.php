@@ -4,7 +4,28 @@ $db_name="cocktails.sq3";
 require_once( "cocktail_db.php" );
 error_reporting( E_ALL | E_STRICT );
 
-global $admin;
+function allParts() {
+	$result = "";
+	$first=1;
+	$parts=getParts();
+	foreach( $parts as $part ) {
+		if( $first == 0 ) $result .= " ";
+		else $first=0;
+		$result .= $part['id'];
+	}
+	return $result;
+}
+
+if( isset($_POST['available'] ) ) $vals=$_POST['available'];
+else {
+	if( isset($_COOKIE["foxtail"]) ) $vals=$_COOKIE["foxtail"];
+	else $vals=allParts();
+	$vals=explode( " ", $vals );
+}
+$available=array();
+foreach( $vals as $part ) $available[$part]=$part;
+
+global $admin, $styles;
 $admin=false;
 
 $amounts = array( '0.5', '1', '1.5', '2', '2.5', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15' );
@@ -12,19 +33,18 @@ $parttypes = array( "Alkohol (+ 37,5%)", "Likör", "Nicht alkoholisch", "Sonstig
 
 function linkList( $edit ) {
 	echo "<div style='background-color:#eee;padding:5px;margin:5px;text-align:center;'>\n";
-	if( $edit ) echo "<a href='?cmd=parts'>Zutatenliste</a> -
-<a href='?cmd=measures'>Massliste</a> -
-<a href='?cmd=types'>Typliste</a>";
+	if( $edit ) echo "<a href='?cmd=measures'>Massliste</a>";
+// <a href='?cmd=types'>Typliste</a>";
 	else echo "<a href='?cmd=all'>Alle Cocktails</a> -
 <a href='?cmd=search'>Cocktails suchen</a> - 
 <a href='?cmd=new'>Neuen Cocktail eingeben</a> - 
-<a href='?cmd=card'>Karte</a></div>";
+<a href='?cmd=parts'>Zutatenliste</a> -
+<a href='?cmd=card'>Karte</a>";
+	echo "</div>\n";
 }
 
-function printAmount( $parts ){
+function computeStyleId( $parts ) {
 	$amount=0;
-	$vierzig=0;
-	$zwanzig=0;
 	$alc=0;
 	foreach( $parts as $part ) {
 		if( $part['measure'] == 1 ){
@@ -33,8 +53,25 @@ function printAmount( $parts ){
 			if( $part['type'] == 1 ) $alc += $part['count']*20;
 		}	
 	}
-// Eiswürfel?
-//	$amount+=2;
+
+	if( $alc == 0 ) return 1;
+	$vol=round($alc/$amount);
+	if( $vol < 10 ) return 2;
+	if( $vol < 13 ) return 3;
+	if( ( $vol < 15) && ( $alc < 200 ) ) return 3;
+	return 4;
+}
+
+function printAmount( $parts ){
+	$amount=0;
+	$alc=0;
+	foreach( $parts as $part ) {
+		if( $part['measure'] == 1 ){
+			$amount += $part['count'];
+			if( $part['type'] == 0 ) $alc += $part['count']*40;
+			if( $part['type'] == 1 ) $alc += $part['count']*20;
+		}	
+	}
 	return "( ".$amount."cl / ".round($alc/$amount)."% )";
 }
 
@@ -88,6 +125,9 @@ function getShortList( $cock ) {
 	$desc = "<p>".$cock['id']." - ";
 	$desc .= "<a href='?cmd=show&id=".$cock['id']."'><b>$name</b></a> ".printAmount($parts)."<br>\n";
 	$desc .= "<i>( ";
+
+//	setCocktailType( $cock['id'], computeStyleId( $parts ) );
+
 	$first=1;
 	foreach( $parts as $part ) {
 		if( $part['type'] < 4 ) {
@@ -134,7 +174,7 @@ function listCocktails( $cocktails, $cols=4 ) {
 	echo "</table></center>\n";
 }
 
-$cmd='all';
+$cmd='parts';
 if( isset( $_GET['cmd'] ) ) $cmd=$_GET['cmd'];
 if( isset( $_POST['cmd'] ) ) $cmd=$_POST['cmd']; 
 
@@ -142,10 +182,12 @@ if( $cmd == 'card' ) {
 	echo "<h2><a href='?cmd=all'>Cocktailkarte</a></h2>\n";
 	$types = getTypes();
 	foreach( $types as $type ) {
-		echo "<hr>\n<h3>".$type['name']."</h3>\n";
-		$cocktails = findCocktailsByType( $type['id'] );
-		foreach( $cocktails as $cocktail ) {
-			echo getShortList( $cocktail );
+		$cocktails = findCocktailsByTypeAndParts( $type['id'], $available );
+		if( !empty( $cocktails ) ) {
+			echo "<hr>\n<h3>".$type['name']."</h3>\n";
+			foreach( $cocktails as $cocktail ) {
+				echo getShortList( $cocktail );
+			}
 		}
 	}
 	echo "\n";
@@ -345,26 +387,38 @@ if( $cmd == 'setPart' ) {
 	$cmd='parts';
 }
 
+
 if( $cmd == 'parts' ) {
 	$admin=true;
 
 	echo "<h2>Zutatenliste</h2>\n";
 
 	$cols=4;
+	
+	echo "<form action='' method='post'>\n";
+	echo "<input type='hidden' name='cmd' value='card'>\n";
+	
 	echo "<center><table>\n";
 	for( $type=0; $type<4; $type++ ){
 		$col=0;
 		echo "<tr><th colspan='$cols'>".$parttypes[ $type ]."</th></tr>\n";
 		$parts = getPartsByType( $type );
 		foreach( $parts as $part ) {
-			if( 0 == $col ) echo "<tr>";
-			echo "<td style='padding:5px;background-color:#eee;'><a href='?cmd=edpart&part=".$part['id']."'>".$part['name']."</a><br>";
-			echo $part['comment']."</td>";
+			if( $part['id'] != 1 ) {
+				if( 0 == $col ) echo "<tr>";
+				echo "<td style='padding:5px;background-color:#eee;'>";
+				echo "<input type='checkbox' name='available[]' value='".$part['id']."'";
+				if( isset( $available[ $part['id'] ] ) ) echo " checked";
+				echo ">\n";
+				echo "<a href='?cmd=edpart&part=".$part['id']."'>".$part['name']."</a><br>";
+				echo $part['comment'];
+				echo "</td>";
 
-			$col++;
-			if( $cols == $col ) {
-				echo "</tr>\n";
-				$col=0;
+				$col++;
+				if( $cols == $col ) {
+					echo "</tr>\n";
+					$col=0;
+				}
 			}
 		} 
 		if( $col > 0 ) {
@@ -373,7 +427,9 @@ if( $cmd == 'parts' ) {
 		}
 	}
 	echo "</table></center>\n";
-
+	echo "<input type='submit' value='Karte'>\n";
+	echo "</form>";
+	
 	echo "<h2>Neue Zutat</h2>\n";
 	echo "<form action='' method='post'>\n";
 	echo "  Name: <input name='name' type='text'><br>\n";
@@ -396,17 +452,21 @@ if( $cmd == 'add' ) {
 
 	$name   = $_POST['name'];
 	$recipe = $_POST['recipe'];
-	$type	= $_POST['type'];
+//	$type	= $_POST['type'];
 
 	$id = getCocktailID( $name );
 	if ( $id == 0 ) {
-		$id = addCocktail( $name, $recipe, $type );
+		$id = addCocktail( $name, $recipe );
 
-		for( $i=0; $i<8; $i++ ) {
+		for( $i=0; $i<10; $i++ ) {
 			if( 1 != $_POST["part$i"] ) {
 				addPart( $id, $_POST["count$i"], $_POST["measure$i"], $_POST["part$i"] );
 			}
 		}
+
+		$parts  = getCocktailParts( $id );
+		setCocktailType( $id, computeStyleId( $parts ) );
+
 	} else {
 		echo "<h2>Den Cocktail <a href='?cmd=show&id=$id'>$name'</a> gibt es schon!</h2>\n";
 	}
@@ -420,15 +480,24 @@ if( $cmd == 'change' ) {
 	$id		= $_POST['id'];
 	$name   = $_POST['name'];
 	$recipe = $_POST['recipe'];
+	$otype  = getCocktailType( $id );
 	$type	= $_POST['type'];
 
-	setCocktail( $id, $name, $recipe, $type );
+	setCocktail( $id, $name, $recipe );
 	removeParts( $id );
 
-	for( $i=0; $i<8; $i++ ) {
+	for( $i=0; $i<10; $i++ ) {
 		if( 1 != $_POST["part$i"] ) {
 			addPart( $id, $_POST["count$i"], $_POST["measure$i"], $_POST["part$i"] );
 		}
+	}
+
+	$parts  = getCocktailParts( $id );
+	if( $type == $otype ) {
+		$type=computeStyleId( $parts );
+	}
+	if( $type != $otype ) {
+		setCocktailType( $id, $type );		
 	}
 
 	$cmd = 'show';
@@ -465,7 +534,7 @@ if( $cmd == 'edit' ) {
 
 		$recipe=getCocktailParts( $cockid );
 
-		for( $i=0; $i<8; $i++ ) {
+		for( $i=0; $i<10; $i++ ) {
 			echo "<select name='count$i'>\n";
 	   		foreach( $amounts as $amount ){
 				if( isset( $recipe[$i] ) ) $check=$recipe[$i]['count'];
@@ -522,7 +591,7 @@ if( $cmd == 'new' ) {
     echo "  <input id='name' name='name' type='text' size='30'>\n";
     $measures = getMeasures();
     $parts = getParts();
-	$types = getTypes();
+/*	$types = getTypes();
 	echo "  <label for'type'>Ist ein</label>\n";
    	echo "  <select id='type' name='type'>\n";
 	foreach( $types as $type ){
@@ -532,9 +601,10 @@ if( $cmd == 'new' ) {
        		echo "  <option value='".$type['id']."'>".$type['name']."\n";
        	}
     }
-   	echo "</select><br>\n"; 
-
-    for( $i=0; $i<8; $i++ ) {
+   	echo "</select>";
+*/
+	echo "<br>\n"; 
+    for( $i=0; $i<10; $i++ ) {
     	echo "<select name='count$i'>\n";    	
 		foreach( $amounts as $amount ){
 			if( 1 == $amount ) { 

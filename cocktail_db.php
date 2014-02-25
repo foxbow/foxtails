@@ -46,7 +46,7 @@ function db_exec( $SQL, $param=array() ){
 function db_init(){
     $cid = db_open();
 	$cid->beginTransaction();
-	$cid->exec( "CREATE TABLE cocktail ( id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR( 32 ) UNIQUE, recipe VARCHAR( 1024 ), type INT );" );
+	$cid->exec( "CREATE TABLE cocktail ( id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR( 32 ) UNIQUE, recipe VARCHAR( 1024 ), type INT, ice INT );" );
 	$cid->exec( "CREATE TABLE recipe ( cockid INTEGER, measure INTEGER, count INTEGER, part INTEGER );" );
 	$cid->exec( "CREATE TABLE measure ( id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR( 32 ) UNIQUE );" );
 	$cid->exec( "CREATE TABLE part ( id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR( 32 ) UNIQUE, comment VARCHAR( 128 ), type INTEGER );" );
@@ -57,11 +57,10 @@ function db_init(){
 	newMeasure( 'Rest' );
 	newMeasure( 'Löffel' );
 	newMeasure( 'Stück' );
+	newType( 'Virgin' );
+	newType( 'Fruchtig' );
 	newType( 'Cocktail' );
-	newType( 'Shooter' );
-	newType( 'Fancy' );
-	newType( 'Sour' );
-	newType( 'Fizz' );
+	newType( 'Hart' );
 	newPart( 'Nichts' );
 }
 
@@ -81,8 +80,8 @@ function newMeasure( $name ) {
 	db_exec( "INSERT OR IGNORE INTO measure (name) VALUES (?);", array($name) );
 }
 
-function addCocktail( $name, $recipe, $type ) {
-	$res = db_exec( "INSERT OR IGNORE INTO cocktail (name, recipe, type) VALUES (?,?,?);", array( $name, $recipe, $type ) );
+function addCocktail( $name, $recipe ) {
+	$res = db_exec( "INSERT OR IGNORE INTO cocktail (name, recipe) VALUES (?,?);", array( $name, $recipe ) );
 	return getCocktailID( $name );
 }
 
@@ -91,8 +90,12 @@ function removeCocktail( $cid ) {
 	$res = db_exec( "DELETE FROM cocktail WHERE id = ?;", array( $id ) );
 }
 
-function setCocktail( $cid, $name, $recipe, $type ) {
-	$res = db_exec( "UPDATE cocktail SET name=?, recipe=?, type=? WHERE id=?;", array( $name, $recipe, $type, $cid ) );
+function setCocktail( $cid, $name, $recipe ) {
+	$res = db_exec( "UPDATE cocktail SET name=?, recipe=? WHERE id=?;", array( $name, $recipe, $cid ) );
+}
+
+function setCocktailType( $cid, $type ) {
+	$res = db_exec( "UPDATE cocktail SET type=? WHERE id=?;", array( $type, $cid ) );
 }
 
 function addPart( $cockid, $count, $measure, $part ) {
@@ -258,5 +261,35 @@ function findCocktailsWithout( $noparts ) {
 function findCocktailsByType( $typeid ) {
 	$res = db_exec( "SELECT id,name FROM cocktail WHERE type=?;", array( $typeid ) );
 	return $res;
+}
+
+function invertParts( $list ) {
+	$parts = getParts();
+	$result=array();
+	foreach( $parts as $part ) $result[$part['id']]=$part['id'];
+	foreach( $list as $part ) unset( $result[$part] );
+	return $result;	
+}
+
+function findCocktailsByTypeAndParts( $type, $available ){
+	$notin = invertParts( $available );
+	$result=array();
+	$num=0;
+	$allcock=findCocktailsByType( $type );
+	foreach( $allcock as $cocktail ) {
+		$parts=getCocktailParts( $cocktail['id'] );
+		$in=0;
+		foreach( $parts as $cpart ) {
+			foreach( $notin as $part ) {
+				if( $cpart['part'] == $part ) $in=1;
+			}
+		}
+		if( $in == 0 ) { 
+			$result[]=$cocktail;
+			$num++;
+		}
+	}
+	return $result;
+
 }
 ?>

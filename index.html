@@ -1,3 +1,16 @@
+<?PHP 
+  if( isset($_POST['available']) ) {
+    $result="";
+    $first=1;
+    foreach( $_POST['available'] as $part ) {
+		if( $first == 0 ) $result .= " ";
+		else $first=0;
+		$result .= $part;    	
+    }
+    setcookie( "foxtail", "$result" );
+    $available=$_POST['available'];
+  }
+?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
    "http://www.w3.org/TR/html4/loose.dtd">
 <HTML>
