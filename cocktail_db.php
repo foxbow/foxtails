@@ -62,9 +62,12 @@ function db_init(){
 	newType( 'Cocktail' );
 	newType( 'Hart' );
 	newPart( 'Nichts' );
+	newPart( 'Eiswürfel' );
+	newPart( 'Crushed Ice', '', 3 );
+	newPart( 'Rocks' );
 }
 
-function newPart( $name, $comment, $type=0 ) {
+function newPart( $name, $comment="", $type=4 ) {
 	db_exec( "INSERT OR IGNORE INTO part (name, comment, type) VALUES (?,?,?);", array( $name, $comment, $type ) );
 }
 
@@ -87,7 +90,7 @@ function addCocktail( $name, $recipe ) {
 
 function removeCocktail( $cid ) {
 	removeParts( $cid );
-	$res = db_exec( "DELETE FROM cocktail WHERE id = ?;", array( $id ) );
+	$res = db_exec( "DELETE FROM cocktail WHERE id = ?;", array( $cid ) );
 }
 
 function setCocktail( $cid, $name, $recipe ) {

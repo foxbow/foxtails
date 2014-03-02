@@ -29,7 +29,7 @@ global $admin, $styles;
 $admin=false;
 
 $amounts = array( '0.5', '1', '1.5', '2', '2.5', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15' );
-$parttypes = array( "Alkohol (+ 37,5%)", "Likör", "Nicht alkoholisch", "Sonstiges" );
+$parttypes = array( "Alkohol (+ 37,5%)", "Likör", "Nicht alkoholisch", "Sonstiges", "Deko" );
 
 function linkList( $edit ) {
 	echo "<div style='background-color:#eee;padding:5px;margin:5px;text-align:center;'>\n";
@@ -45,12 +45,28 @@ function linkList( $edit ) {
 
 function computeStyleId( $parts ) {
 	$amount=0;
+	$amount=0;
 	$alc=0;
 	foreach( $parts as $part ) {
-		if( $part['measure'] == 1 ){
-			$amount += $part['count'];
-			if( $part['type'] == 0 ) $alc += $part['count']*40;
-			if( $part['type'] == 1 ) $alc += $part['count']*20;
+		switch( $part['part'] ) {
+		case 1: // Nichts
+			break;
+		case 2: // Eiswürfel
+			$amount += $part['count'] * 0.25;
+			break;
+		case 3: // Crushed Ice
+			$amount += $part['count'] * 0.5;
+			break;
+		case 4: // Rocks
+			// $amount += $part['count'] * 0.25;
+			break;
+		default:
+			if( $part['measure'] == 1 ){
+				$amount += $part['count'];
+				if( $part['type'] == 0 ) $alc += $part['count']*40;
+				if( $part['type'] == 1 ) $alc += $part['count']*20;
+			}
+			break;
 		}	
 	}
 
@@ -63,16 +79,40 @@ function computeStyleId( $parts ) {
 }
 
 function printAmount( $parts ){
+	$glass=0;
 	$amount=0;
 	$alc=0;
 	foreach( $parts as $part ) {
-		if( $part['measure'] == 1 ){
-			$amount += $part['count'];
-			if( $part['type'] == 0 ) $alc += $part['count']*40;
-			if( $part['type'] == 1 ) $alc += $part['count']*20;
-		}	
+		switch( $part['part'] ) {
+		case 1: // Nichts
+			break;
+		case 2: // Eiswürfel
+			$glass += $part['count'];
+			$amount += $part['count'] * 0.25;
+			break;
+		case 3: // Crushed Ice
+			$glass += $part['count'];
+			$amount += $part['count'] * 0.5;
+			break;
+		case 4: // Rocks
+			$glass += $part['count'];
+			// $amount += $part['count'] * 0.25;
+			break;
+		default:
+			if( $part['measure'] == 1 ){
+				$amount += $part['count'];
+				$glass  += $part['count'];
+				if( $part['type'] == 0 ) $alc += $part['count']*40;
+				if( $part['type'] == 1 ) $alc += $part['count']*20;
+			}
+			break;
+		}
 	}
-	return "( ".$amount."cl / ".round($alc/$amount)."% )";
+	
+	$glass=round(($glass+5)/10)/10;
+	
+//	return "( ".$amount."cl / ".round($alc/$amount)."% )";
+	return "( ".$glass."l / ".round($alc/$amount)."% )";
 }
 
 function printPart( $type, $name ) {
@@ -126,14 +166,13 @@ function getShortList( $cock ) {
 	$desc .= "<a href='?cmd=show&id=".$cock['id']."'><b>$name</b></a> ".printAmount($parts)."<br>\n";
 	$desc .= "<i>( ";
 
-//	setCocktailType( $cock['id'], computeStyleId( $parts ) );
-
 	$first=1;
 	foreach( $parts as $part ) {
 		if( $part['type'] < 4 ) {
 			if( $first == 0 ) $desc .= ", ";
 			else $first=0;
-			$desc .= printPart( $part['type'], $part['name'] );
+			if( $part['type'] < 4 ) 
+				$desc .= printPart( $part['type'], $part['name'] );
 		}
 	}
 	$desc .= " )</i></p>\n";
@@ -363,7 +402,7 @@ if( $cmd == 'edpart' ) {
     echo "  <input type='hidden' name='id' value='$partid'>\n";
     echo "  <input type='hidden' name='cmd' value='setPart'>\n";
     echo "  <select name='type'>\n";
-	for( $type=0; $type<4; $type++ ) {
+	for( $type=0; $type<5; $type++ ) {
 		if( $part['type'] == $type )
 	   	    echo "  <option selected value='$type'>".$parttypes[ $type ]."\n";	
 		else
@@ -399,7 +438,7 @@ if( $cmd == 'parts' ) {
 	echo "<input type='hidden' name='cmd' value='card'>\n";
 	
 	echo "<center><table>\n";
-	for( $type=0; $type<4; $type++ ){
+	for( $type=0; $type<5; $type++ ){
 		$col=0;
 		echo "<tr><th colspan='$cols'>".$parttypes[ $type ]."</th></tr>\n";
 		$parts = getPartsByType( $type );
@@ -436,7 +475,7 @@ if( $cmd == 'parts' ) {
 	echo "	Kommentar: <input name='comment' type='text'><br>\n";
 	echo "  <input type='hidden' name='cmd' value='setPart'>\n";
 	echo "  <select name='type'>\n";
-	for( $type=0; $type<4; $type++ ) {
+	for( $type=0; $type<5; $type++ ) {
 		if( 0 == $type )
 	   	    echo "  <option selected value='$type'>".$parttypes[ $type ]."\n";	
 		else
@@ -503,6 +542,17 @@ if( $cmd == 'change' ) {
 	$cmd = 'show';
 }
 
+if( $cmd == 'remove' ) {
+	$admin=true;
+
+	$id		= $_POST['id'];
+
+	removeCocktail( $id );
+	removeParts( $id );
+
+	$cmd = 'all';
+}
+
 if( $cmd == 'edit' ) {
 	$admin=true;
 
@@ -513,6 +563,11 @@ if( $cmd == 'edit' ) {
 		$cockid=$_GET['id'];
 		$name=getCocktailName( $cockid );
 		echo "<h2>$name</h2>";
+		echo "<form action='' method='post'>\n";
+		echo "	<input type='hidden' name='id' value='$cockid'>\n";
+		echo "	<input type='hidden' name='cmd' value='remove'>\n";
+		echo "  <input type='submit' value=' * LÖSCHEN * '>\n";
+		echo "</form><br>\n";
 		echo "<form action='' method='post'>\n";
 		echo "	<input type='hidden' name='id' value='$cockid'>\n";
 		echo "  <label for='name'>Name:</label>\n";
