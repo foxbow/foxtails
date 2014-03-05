@@ -1,0 +1,20 @@
+a, a:visited {
+	color: #000;
+	text-decoration: none;
+	padding: 0 1px 0 1px;
+}
+a:hover {
+	background-color: #fff;
+	color: #444;
+}
+div#linklist {
+	background-color:#eee;
+	padding:5px;
+	margin:5px;
+	text-align:center;
+}
+td#item {
+	padding:5px;
+	background-color:#eee;
+}
+
