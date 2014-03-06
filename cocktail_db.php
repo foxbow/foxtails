@@ -1,5 +1,35 @@
 <?PHP
-if( !isset( $db_name ) ) trigger_error("db_name not set!",E_USER_ERROR);
+if( !isset( $db_name ) ) trigger_error(_("db_name nicht gesetzt!"),E_USER_ERROR);
+
+function selectLanguage() {
+	$langs = array();
+	if ( $handle = opendir( './locale' ) ) {
+		while (false !== ($entry = readdir( $handle ) ) ) {
+//        	if ($entry != "." && $entry != ".." && is_dir( "./locale/".$entry ) ) {
+        	if ( preg_match("#_#", $entry) ) {
+            	$langs[]=$entry;
+        	}
+		}
+	    closedir($handle);
+    }else{
+		trigger_error("Verzeichnisfehler", E_USER_ERROR);
+	}
+
+	echo "<form action='' method='post'>\n";
+	echo "Select locale:";	
+    echo "<select name='lang'>\n";
+	foreach( $langs as $lang ) {
+		if( "de" == $lang )
+			echo "  <option selected value='$lang'>$lang\n";	
+		else
+			echo "  <option value='$lang'>$lang\n";	
+    }
+    echo "</select>\n";
+    echo "  <input type='submit' value='OK'>\n";
+	echo "</form>\n";
+	echo "</BODY></HTML>\n";
+	exit();
+}
 
 /**
  * open the database.
@@ -12,12 +42,16 @@ function db_open(){
 		if( file_exists( $db_name ) ) {
 		    $cid = new PDO( "sqlite:".$db_name );
 		} else {
-		    $cid = new PDO( "sqlite:".$db_name );
-		    db_init();
+			if( isset( $_POST['lang'] ) ) {
+			    $cid = new PDO( "sqlite:".$db_name );
+			    db_init();
+			} else {
+				selectLanguage();
+			}
 		}
 	}
 	
-    if($cid === false) trigger_error("Datenbankfehler", E_USER_ERROR);
+    if($cid === false) trigger_error(_("Datenbankfehler"), E_USER_ERROR);
 
     return $cid;
 }
@@ -51,20 +85,20 @@ function db_init(){
 	$cid->exec( "CREATE TABLE measure ( id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR( 32 ) UNIQUE );" );
 	$cid->exec( "CREATE TABLE part ( id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR( 32 ) UNIQUE, comment VARCHAR( 128 ), type INTEGER );" );
 	$cid->exec( "CREATE TABLE type ( id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR( 32 ) UNIQUE );" );
+	$cid->exec( "CREATE TABLE settings ( name VARCHAR( 32 ) PRIMARY KEY UNIQUE, value VARCHAR( 32 ) );" );
     $cid->commit();
-    newMeasure( 'cl' );
-	newMeasure( 'Spritzer' );
-	newMeasure( 'Rest' );
-	newMeasure( 'Löffel' );
-	newMeasure( 'Stück' );
-	newType( 'Virgin' );
-	newType( 'Fruchtig' );
-	newType( 'Cocktail' );
-	newType( 'Hart' );
-	newPart( 'Nichts' );
-	newPart( 'Eiswürfel' );
-	newPart( 'Crushed Ice', '', 3 );
-	newPart( 'Rocks' );
+    newMeasure( _('cl') );
+	newMeasure( _('Spritzer') );
+	newMeasure( _('Löffel') );
+	newMeasure( _('Stück') );
+	newType( _('Virgin') );
+	newType( _('Fruchtig') );
+	newType( _('Cocktail') );
+	newType( _('Hart') );
+	newPart( _('Nichts') );
+	newPart( _('Eiswürfel') );
+	newPart( _('Crushed Ice'), '', 3 );
+	newPart( _('Rocks') );
 }
 
 function newPart( $name, $comment="", $type=4 ) {
@@ -86,6 +120,16 @@ function newMeasure( $name ) {
 function addCocktail( $name, $recipe ) {
 	$res = db_exec( "INSERT OR IGNORE INTO cocktail (name, recipe) VALUES (?,?);", array( $name, $recipe ) );
 	return getCocktailID( $name );
+}
+
+function getSetting( $name ) {
+	$res = db_exec( "SELECT value FROM settings where name=?;", array( $name ) );
+	if( !empty( $res ) ) return $res[0]['value'];
+	else return "";
+}
+
+function setSetting( $name, $value ) {
+	$res = db_exec( "INSERT OR REPLACE INTO settings (name,value) VALUES (?,?);", array( $name, $value ) );
 }
 
 function removeCocktail( $cid ) {
@@ -114,7 +158,7 @@ function getTypes( ) {
 function getTypeName( $id ) {
 	$res = db_exec( "SELECT name FROM type WHERE id = ?;", array( $id ) );
 	if( !empty( $res ) ) return $res[0]['name'];
-	else return "Unbekannt!";
+	else return _("Unbekannt");
 }
 
 function getMeasures( ) {
@@ -125,7 +169,7 @@ function getMeasures( ) {
 function getMeasure( $id ) {
 	$res = db_exec( "SELECT name FROM measure WHERE id = ?;", array( $id ) );
 	if( !empty( $res ) ) return $res[0]['name'];
-	else return "Unbekannt!";
+	else return _("Unbekannt");
 }
 
 function getParts( ) {
@@ -145,13 +189,13 @@ function removeParts( $id ) {
 function getPart( $id ) {
 	$res = db_exec( "SELECT id, name, comment, type FROM part WHERE id = ?;", array( $id ) );
 	if( !empty( $res ) ) return $res[0];
-	else return array( -1, "Unbekannt!", "", -1 );
+	else return array( -1, _("Unbekannt"), "", -1 );
 }
 
 function getPartName( $id ) {
 	$res = db_exec( "SELECT name FROM part WHERE id = ?;", array( $id ) );
 	if( !empty( $res ) ) return $res[0]['name'];
-	else return( "Unbekannt!" );
+	else return( _("Unbekannt") );
 }
 
 function getPartType( $id ) {
@@ -177,7 +221,7 @@ function getCocktail( $id ) {
 function getCocktailName( $cockid ) {
 	$res = db_exec( "SELECT name FROM cocktail WHERE id=?;", array( $cockid ) );
 	if( isset( $res[0]['name'] ) ) return $res[0]['name'];
-	else return "Unbekannter Cocktail!";
+	else return _("Unbekannt");
 }  
 
 function getCocktailType( $cockid ) {
@@ -203,7 +247,7 @@ function getCocktailID( $name ) {
 function getCocktailRecipe( $cockid ) {
 	$res = db_exec( "SELECT recipe FROM cocktail WHERE id=?;", array( $cockid ) );
 	if( isset( $res[0]['recipe'] ) ) return $res[0]['recipe'];
-	else return "Nummern raten ist dohv!";
+	else return _("Unbekannt");
 }
 
 function getCocktailParts( $cockid ) {

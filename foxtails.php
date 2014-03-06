@@ -4,6 +4,32 @@ $db_name="cocktails.sq3";
 require_once( "cocktail_db.php" );
 error_reporting( E_ALL | E_STRICT );
 
+if( isset($_POST['available']) ) {
+    $result="";
+    $first=1;
+    foreach( $_POST['available'] as $part ) {
+		if( $first == 0 ) $result .= " ";
+		else $first=0;
+		$result .= $part;    	
+    }
+    setSetting( "available", "$result" );
+}
+
+if( isset( $_POST['lang'] ) ) setSetting( "lang", $_POST['lang'] );
+$language=getSetting( "lang" );
+if( $language == "" ) selectLanguage();
+
+// $language = "en";
+putenv("LANG=" . $language); // Win32
+setlocale(LC_ALL, $language); // Linux
+
+// Set the text domain as "messages"
+$domain = "messages";
+// bindtextdomain($domain, "./locale/nocache"); 
+bindtextdomain($domain, "./locale"); 
+bind_textdomain_codeset($domain, 'UTF-8');
+textdomain($domain);
+
 function allParts() {
 	$result = "";
 	$first=1;
@@ -16,20 +42,16 @@ function allParts() {
 	return $result;
 }
 
-if( isset($_POST['available'] ) ) $vals=$_POST['available'];
-else {
-	if( isset($_COOKIE["foxtail"]) ) $vals=$_COOKIE["foxtail"];
-	else $vals=allParts();
-	$vals=explode( " ", $vals );
-}
+$vals=getSetting( "available" );
+if( $vals == "" ) $vals=allParts();
+$vals=explode( " ", $vals );
 $available=array();
 foreach( $vals as $part ) $available[$part]=$part;
 
 global $admin, $styles;
-$admin=false;
 
 $amounts = array( '0.5', '1', '1.5', '2', '2.5', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15' );
-$parttypes = array( "Alkohol (+ 37,5%)", "Likör", "Nicht alkoholisch", "Sonstiges", "Deko" );
+$parttypes = array( gettext("Alkohol (+ 37,5%)"), gettext("Likör"), gettext("Nicht alkoholisch"), gettext("Sonstiges"), gettext("Deko") );
 
 function computeStyleId( $parts ) {
 	$amount=0;

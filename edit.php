@@ -4,26 +4,27 @@ if( isset( $_GET['cmd'] ) ) $cmd=$_GET['cmd'];
 if( isset( $_POST['cmd'] ) ) $cmd=$_POST['cmd']; 
 
 if( !isset( $password ) || $password!=md5("foxtail") ) {
-	echo "<h2>Unlock</h2>\n";
+	echo "<h2>".gettext("Unlock")."</h2>\n";
 	echo "<form action='' method='post'>\n";
-	echo "  Password: <input name='password' type='password'><br>\n";
+	echo gettext("Passwort");
+	echo ": <input name='password' type='password'><br>\n";
 	echo "  <input type='hidden' name='admin' value='on'>\n";
 	echo "  <input type='hidden' name='cmd' value='$cmd'>\n";
 	echo "  <input type='submit' value='okay'>\n";
 	echo "</form>\n";
 	
 	echo "<div id='linklist'>\n";
-	echo "<a href='?admin=off'>Anzeigen</a>";
+	echo "<a href='?admin=off'>".gettext("Anzeigen")."</a>";
 	echo "</div>\n";
 	return;
 }
 
 
 echo "<div id='linklist'>\n";
-echo "<a href='?admin=on&cmd=all'>Alle Cocktails</a> - ";
-echo "<a href='?admin=on&cmd=measures'>Massliste</a> - ";
-echo "<a href='?admin=on&cmd=parts'>Zutatenliste</a> - ";
-echo "<a href='?admin=on&cmd=types'>Typliste</a>";
+echo "<a href='?admin=on&cmd=all'>".gettext("Alle Cocktails")."</a> - ";
+echo "<a href='?admin=on&cmd=measures'>".gettext("Massliste")."</a> - ";
+echo "<a href='?admin=on&cmd=parts'>".gettext("Zutatenliste")."</a> - ";
+echo "<a href='?admin=on&cmd=types'>".gettext("Typliste")."</a>";
 echo "</div>\n";
 
 echo "<div style='margin-left:3%;margin-right:3%;text-align:center;'>\n";
@@ -46,13 +47,13 @@ if( $cmd == 'addMeasure' ) {
 }
 
 if( $cmd == 'measures' ) {
-	echo "<h2>Massliste</h2>\n";
+	echo "<h2>".gettext("Massliste")."</h2>\n";
 
 	$parts = getMeasures();
 	foreach( $parts as $part ) {
 		echo $part['name']."<br>";
 	}
-	echo "<h2>Neues Mass</h2>\n";
+	echo "<h2>".gettext("Neues Mass")."</h2>\n";
 	echo "<form action='' method='post'>\n";
 	echo "  Name: <input name='name' type='text'><br>\n";
 	echo "  <input type='hidden' name='admin' value='on'>\n";
@@ -68,14 +69,14 @@ if( $cmd == 'addType' ) {
 }
 
 if( $cmd == 'types' ) {
-	echo "<h2>Typliste</h2>\n";
+	echo "<h2>".gettext("Typliste")."</h2>\n";
 
 	$parts = getTypes();
 	foreach( $parts as $part ) {
 		echo $part['name']."<br>";
 	}
 
-	echo "<h2>Neuer Typ</h2>\n";
+	echo "<h2>".gettext("Neuer Typ")."</h2>\n";
 	echo "<form action='' method='post'>\n";
 	echo "  Name: <input name='name' type='text'><br>\n";
 	echo "  <input type='hidden' name='admin' value='on'>\n";
@@ -120,7 +121,7 @@ if( $cmd == 'setPart' ) {
 }
 
 if( $cmd == 'parts' ) {
-	echo "<h2>Zutatenliste</h2>\n";
+	echo "<h2>".gettext("Zutatenliste")."</h2>\n";
 
 	$cols=4;
 	
@@ -151,7 +152,7 @@ if( $cmd == 'parts' ) {
 	}
 	echo "</table></center>\n";
 	
-	echo "<h2>Neue Zutat</h2>\n";
+	echo "<h2>".gettext("Neue Zutat")."</h2>\n";
 	echo "<form action='' method='post'>\n";
 	echo "  Name: <input name='name' type='text'><br>\n";
 	echo "	Kommentar: <input name='comment' type='text'><br>\n";
@@ -188,7 +189,7 @@ if( $cmd == 'add' ) {
 		setCocktailType( $id, computeStyleId( $parts ) );
 
 	} else {
-		echo "<h2>Den Cocktail <a href='?cmd=show&id=$id'>$name'</a> gibt es schon!</h2>\n";
+		echo "<h2>".gettext("Den Cocktail")." <a href='?cmd=show&id=$id'>$name'</a> ".gettext("gibt es schon")."!</h2>\n";
 	}
 	
 	$cmd = 'all';
@@ -232,7 +233,7 @@ if( $cmd == 'remove' ) {
 
 if( $cmd == 'edit' ) {
 	if( !isset( $_GET['id'] ) ) {
-		echo "<h2>Kein Cocktail angegeben!</h2>\n";
+		echo "<h2>".gettext("Kein Cocktail angegeben!")."</h2>\n";
 		$cmd='new';
 	} else {
 		$cockid=$_GET['id'];
@@ -252,7 +253,7 @@ if( $cmd == 'edit' ) {
 		$parts = getParts();
 		$types = getTypes();
 		$ctype = getCocktailTypeID( $cockid );
-		echo "  <label for'type'>Ist ein</label>\n";
+		echo "  <label for'type'>".gettext("Ist ein")."</label>\n";
 	   	echo "  <select id='type' name='type'>\n";
 		foreach( $types as $type ){
 			if( $ctype == $type['id'] ) { 
@@ -302,7 +303,7 @@ if( $cmd == 'edit' ) {
 		    }
 			echo "</select><br>\n"; 
 		}
-		echo "  <label for='kommentar'>Zubereitung:</label><br>\n";
+		echo "  <label for='kommentar'>".gettext("Zubereitung").":</label><br>\n";
 		echo "  <textarea id='kommentar' name='recipe' cols='80' rows='10'>";
 		echo getCocktailRecipe( $cockid );
 		echo "</textarea><br>\n";
@@ -314,25 +315,13 @@ if( $cmd == 'edit' ) {
 }
 
 if( $cmd == 'new' ) {
-	echo "<h2>Neuen Cocktail eingeben</h2>\n";
+	echo "<h2>".gettext("Neuen Cocktail eingeben")."</h2>\n";
 
 	echo "<form action='' method='post'>\n";
     echo "  <label for='name'>Name:</label>\n";
     echo "  <input id='name' name='name' type='text' size='30'>\n";
     $measures = getMeasures();
     $parts = getParts();
-/*	$types = getTypes();
-	echo "  <label for'type'>Ist ein</label>\n";
-   	echo "  <select id='type' name='type'>\n";
-	foreach( $types as $type ){
-		if( 1 == $type['id'] ) { 
-     		echo "  <option selected value='".$type['id']."'>".$type['name']."\n";
-		} else {
-       		echo "  <option value='".$type['id']."'>".$type['name']."\n";
-       	}
-    }
-   	echo "</select>";
-*/
 	echo "<br>\n"; 
     for( $i=0; $i<10; $i++ ) {
     	echo "<select name='count$i'>\n";    	
@@ -364,9 +353,9 @@ if( $cmd == 'new' ) {
         }
     	echo "</select><br>\n"; 
     }
-	echo "  <label for='kommentar'>Zubereitung:</label><br>\n";
+	echo "  <label for='kommentar'>".gettext("Zubereitung").":</label><br>\n";
 	echo "  <textarea id='kommentar' name='recipe' cols='80' rows='10'>";
-	echo "Alle Zutaten mit Eis im Shaker mixen und in ein Glas auf Eis abseihen.";
+	echo gettext("Alle Zutaten mit Eis im Shaker mixen und in ein Glas auf Eis abseihen.");
 	echo "</textarea><br>\n";
 	echo "  <input type='hidden' name='admin' value='on'>\n";
     echo "  <input type='hidden' name='cmd' value='add'>\n";
@@ -375,7 +364,7 @@ if( $cmd == 'new' ) {
 }
 
 if( $cmd == 'all' ) {
-	echo "<h2>Alle Cocktails</h2>\n";
+	echo "<h2>".gettext("Alle Cocktails")."</h2>\n";
 	$cocktails = getCocktails();
 	listCocktails( $cocktails );
 }
@@ -386,9 +375,9 @@ if( $cmd == 'show' ) {
 }
 
 echo "</div>\n";
-	echo "<div id='linklist'>\n";
-	echo "<a href='?admin=off'>Anzeigen</a> - ";
-	echo "<a href='?admin=logoff'>Abmelden</a>";
-	echo "</div>\n";
+echo "<div id='linklist'>\n";
+echo "<a href='?admin=off'>".gettext("Anzeigen")."</a> - ";
+echo "<a href='?admin=logoff'>".gettext("Abmelden")."</a>";
+echo "</div>\n";
 ?>
 

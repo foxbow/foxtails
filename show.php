@@ -1,11 +1,10 @@
 <?php
-
 $cmd='card';
 if( isset( $_GET['cmd'] ) ) $cmd=$_GET['cmd'];
 if( isset( $_POST['cmd'] ) ) $cmd=$_POST['cmd']; 
 
 if( $cmd == 'showcard' ) {
-	echo "<h2><a href='?cmd=all'>Cocktailkarte</a></h2>\n";
+	echo "<h2><a href='?cmd=all'>".gettext("Cocktailkarte")."</a></h2>\n";
 	$types = getTypes();
 	foreach( $types as $type ) {
 		$cocktails = findCocktailsByTypeAndParts( $type['id'], $available );
@@ -21,9 +20,9 @@ if( $cmd == 'showcard' ) {
 }
 
 echo "<div id='linklist'>\n";
-echo "<a href='?cmd=all'>Alle Cocktails</a> - ";
-echo "<a href='?cmd=search'>Cocktails suchen</a> - ";
-echo "<a href='?cmd=card'>Karte</a>";
+echo "<a href='?cmd=all'>".gettext("Alle Cocktails")."</a> - ";
+echo "<a href='?cmd=search'>".gettext("Cocktails suchen")."</a> - ";
+echo "<a href='?cmd=card'>".gettext("Karte")."</a>";
 echo "</div>\n";
 
 echo "<div style='margin-left:3%;margin-right:3%;text-align:center;'>\n";
@@ -41,7 +40,7 @@ if( $cmd == 'longlist' ) {
 if( $cmd == 'search' ) {
 	if( isset( $_POST['id0'] ) ){
 		$ids=array( $_POST['id0'], $_POST['id1'],$_POST['id2'],$_POST['id3'], );
-		echo "<h2>Cocktails mit ";
+		echo "<h2>".gettext("Cocktails mit")." ";
 		for( $i=0; $i<4; $i++ ) {
 			if( $ids[$i] != 1 ) {
 				$name=getPartName( $ids[$i] );
@@ -62,7 +61,7 @@ if( $cmd == 'search' ) {
 	
 	if( isset( $_POST['noid0'] ) ) {
 		$ids=array( $_POST['noid0'], $_POST['noid1'],$_POST['noid2'],$_POST['noid3'], );
-		echo "<h2>Cocktails ohne ";
+		echo "<h2>".gettext("Cocktails ohne")." ";
 		for( $i=0; $i<4; $i++ ) {
 			if( $ids[$i] != 1 ) {
 				$name=getPartName( $ids[$i] );
@@ -79,13 +78,13 @@ if( $cmd == 'search' ) {
 		foreach( $cocktails as $cockid ) {
 			$link=$link.$cockid['id'].",";
 		}
-		echo "<a href='$link'>Lange Liste</a>\n";
+		echo "<a href='$link'>".gettext("Lange Liste")."</a>\n";
 		echo "<hr>\n";
 	}
 
 	echo "<form action='' method='post'>\n";
     $parts = getParts();
-    echo "Suche nach Cocktails mit\n";
+    echo gettext("Suche nach Cocktails mit")."\n";
 	
 	for( $i=0; $i<4; $i++ ){
 	    echo "<select name='id$i'>\n";
@@ -105,7 +104,7 @@ if( $cmd == 'search' ) {
 
 	echo "<form action='' method='post'>\n";
     $parts = getParts();
-    echo "Suche nach Cocktails ohne\n";
+    echo gettext("Suche nach Cocktails ohne")."\n";
 	
 	for( $i=0; $i<4; $i++ ){
 	    echo "<select name='noid$i'>\n";
@@ -119,30 +118,30 @@ if( $cmd == 'search' ) {
 	}
 
     echo "  <input type='hidden' name='cmd' value='search'>\n";
-    echo "  <input type='submit' value='Los'>\n";
+    echo "  <input type='submit' value='".gettext("Los")."'>\n";
 	echo "</form>\n";
 	echo "<hr>\n";
 
 	echo "<form action='' method='post'>\n";
     $types = getTypes();
-    echo "<label for='type'>Zeige alle </label>\n";
+    echo "<label for='type'>".gettext("Zeige alle")." </label>\n";
     echo "<select id='type' name='type'>\n";
    	foreach( $types as $type ){
        	echo "  <option value='".$type['id']."'>".$type['name']."\n";
     }
     echo "</select>\n";
     echo "  <input type='hidden' name='cmd' value='search'>\n";
-    echo "  <input type='submit' value='Los'>\n";
+    echo "  <input type='submit' value='".gettext("Los")."'>\n";
 	echo "</form>\n";
 }
 
 if( $cmd == 'card' ) {
-	echo "<h2>Vorhandene Zutaten</h2>\n";
+	echo "<h2>".gettext("Vorhandene Zutaten")."</h2>\n";
 
 	$cols=4;
 	
 	echo "<form action='' method='post'>\n";
-	echo "<input type='submit' value='Karte zeigen'><br>\n";
+	echo "<input type='submit' value='".gettext("Karte zeigen")."'><br>\n";
 	echo "<input type='hidden' name='cmd' value='showcard'>\n";
 	
 	echo "<center><table>\n";
@@ -174,12 +173,12 @@ if( $cmd == 'card' ) {
 		}
 	}
 	echo "</table></center>\n";
-	echo "<input type='submit' value='Karte zeigen'>\n";
+	echo "<input type='submit' value='".gettext("Karte zeigen")."'>\n";
 	echo "</form>";
 }
 
 if( $cmd == 'all' ) {
-	echo "<h2>Alle Cocktails</h2>\n";
+	echo "<h2>".gettext("Alle Cocktails")."</h2>\n";
 	$cocktails = getCocktails();
 	listCocktails( $cocktails );
 }
@@ -191,7 +190,7 @@ if( $cmd == 'show' ) {
 
 echo "</div>\n";
 	echo "<div id='linklist'>\n";
-	echo "<a href='?admin=on'>Bearbeiten</a>";
+	echo "<a href='?admin=on'>".gettext("Bearbeiten")."</a>";
 	echo "</div>\n";
 ?>
 
