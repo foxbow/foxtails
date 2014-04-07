@@ -19,9 +19,9 @@ if( !isset( $password ) || $password!=md5("foxtail") ) {
 	return;
 }
 
-
 echo "<div id='linklist'>\n";
 echo "<a href='?admin=on&cmd=all'>".gettext("Alle Cocktails")."</a> - ";
+echo "<a href='?admin=on&cmd=new'>".gettext("Neuen Cocktail eingeben")."</a> - ";
 echo "<a href='?admin=on&cmd=measures'>".gettext("Massliste")."</a> - ";
 echo "<a href='?admin=on&cmd=parts'>".gettext("Zutatenliste")."</a> - ";
 echo "<a href='?admin=on&cmd=types'>".gettext("Typliste")."</a>";
@@ -124,7 +124,7 @@ if( $cmd == 'parts' ) {
 	echo "<h2>".gettext("Zutatenliste")."</h2>\n";
 
 	$cols=4;
-	
+	$numc = 1.0/getCocktailNum();
 	echo "<center><table>\n";
 	for( $type=0; $type<5; $type++ ){
 		$col=0;
@@ -134,7 +134,14 @@ if( $cmd == 'parts' ) {
 			if( $part['id'] != 1 ) {
 				if( 0 == $col ) echo "<tr>";
 				echo "<td style='padding:5px;background-color:#eee;'>";
-				echo "<a href='?cmd=edpart&admin=on&part=".$part['id']."'>".$part['name']."</a><br>";
+				if( ($numc > 0 ) && ($part['num'] > 0 ) ){
+					$x=$part['num']*$numc;
+					$perc=round( ( -(($x-1.0)*($x-1)) + 1.0 ) * 15 );
+					echo " <div style='display: inline-block; width: 15px; height: ".$perc."px; background-color: teal;'></div>\n";
+				}
+
+				echo "<a href='?cmd=edpart&admin=on&part=".$part['id']."'>".$part['name']."</a>";
+				echo "<br>\n";
 				echo $part['comment'];
 				echo "</td>";
 

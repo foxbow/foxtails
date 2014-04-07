@@ -1,11 +1,10 @@
 <?PHP
 if( !isset( $db_name ) ) trigger_error(_("db_name nicht gesetzt!"),E_USER_ERROR);
 
-function selectLanguage() {
+function getTranslations(){
 	$langs = array();
 	if ( $handle = opendir( './locale' ) ) {
 		while (false !== ($entry = readdir( $handle ) ) ) {
-//        	if ($entry != "." && $entry != ".." && is_dir( "./locale/".$entry ) ) {
         	if ( preg_match("#_#", $entry) ) {
             	$langs[]=$entry;
         	}
@@ -14,7 +13,11 @@ function selectLanguage() {
     }else{
 		trigger_error("Verzeichnisfehler", E_USER_ERROR);
 	}
+	return $langs;
+}
 
+function selectLanguage() {
+	$langs=getTranslations();
 	echo "<form action='' method='post'>\n";
 	echo "Select locale:";	
     echo "<select name='lang'>\n";
@@ -179,6 +182,16 @@ function getParts( ) {
 
 function getPartsByType( $type ) {
 	$res = db_exec( "SELECT id, name, comment FROM part WHERE type=? ORDER BY name;", array( $type ) );
+	/** edit **/
+	foreach( $res as &$part ) {
+		$num=db_exec( "SELECT count(*) FROM recipe WHERE part=?;", array( $part['id'] ) );
+		if( !empty( $num ) ) {
+			$part['num']=$num[0][0];
+		} else {
+			$part['num']=0;
+		}
+	}
+	/** endit */	
 	return $res;
 }
 
@@ -255,6 +268,12 @@ function getCocktailParts( $cockid ) {
 	return $res;
 }
 
+function getCocktailNum() {
+	$res = db_exec( "SELECT count(*) FROM cocktail;" );
+	if( !empty( $res ) ) return $res[0][0];
+	else return -1;
+}
+
 function getCocktailParts2( $cockid ) {
 	$res = db_exec( "SELECT * FROM recipe WHERE cockid=?;", array( $cockid ) );
 	return $res;
@@ -265,6 +284,9 @@ function findCocktailsByPart( $partid ) {
 	return $res;
 }
 
+/**
+ * returns an array of cocktails containing at least one $parts
+**/
 function findCocktailsByParts( $parts ) {
 	$result=array();
 	foreach( $parts as $part ) {
@@ -285,6 +307,9 @@ function findCocktailsByParts( $parts ) {
 	return $result;
 }
 
+/**
+ * returns an array of cocktails that do not contain $noparts
+**/
 function findCocktailsWithout( $noparts ) {
 	$result=array();
 	$num=0;
@@ -305,11 +330,17 @@ function findCocktailsWithout( $noparts ) {
 	return $result;
 }
 
+/**
+ * returns an array of cocktails of the type $typeid
+**/
 function findCocktailsByType( $typeid ) {
 	$res = db_exec( "SELECT id,name FROM cocktail WHERE type=?;", array( $typeid ) );
 	return $res;
 }
 
+/**
+ * returns a list of all parts that are not in the $list of given parts
+**/
 function invertParts( $list ) {
 	$parts = getParts();
 	$result=array();
@@ -318,10 +349,13 @@ function invertParts( $list ) {
 	return $result;	
 }
 
+/**
+ * returns an array of cocktails of the $type which include
+ * just the $available parts
+**/
 function findCocktailsByTypeAndParts( $type, $available ){
 	$notin = invertParts( $available );
 	$result=array();
-	$num=0;
 	$allcock=findCocktailsByType( $type );
 	foreach( $allcock as $cocktail ) {
 		$parts=getCocktailParts( $cocktail['id'] );
@@ -333,10 +367,8 @@ function findCocktailsByTypeAndParts( $type, $available ){
 		}
 		if( $in == 0 ) { 
 			$result[]=$cocktail;
-			$num++;
 		}
 	}
 	return $result;
-
 }
 ?>

@@ -1,9 +1,14 @@
 <?php
-$cmd='card';
+
+// Set Default command - show cocktail current card
+$cmd='showcard';
+// Check if a command is set via HTTP GET (in a href)
 if( isset( $_GET['cmd'] ) ) $cmd=$_GET['cmd'];
+// Check if a command is set via HTTP POST (in a form)
 if( isset( $_POST['cmd'] ) ) $cmd=$_POST['cmd']; 
 
 if( $cmd == 'showcard' ) {
+	// Show current cocktail menu
 	echo "<h2><a href='?cmd=all'>".gettext("Cocktailkarte")."</a></h2>\n";
 	$types = getTypes();
 	foreach( $types as $type ) {
@@ -22,7 +27,8 @@ if( $cmd == 'showcard' ) {
 echo "<div id='linklist'>\n";
 echo "<a href='?cmd=all'>".gettext("Alle Cocktails")."</a> - ";
 echo "<a href='?cmd=search'>".gettext("Cocktails suchen")."</a> - ";
-echo "<a href='?cmd=card'>".gettext("Karte")."</a>";
+echo "<a href='?cmd=parts'>".gettext("Zutatenliste")."</a> - ";
+echo "<a href='?cmd=showcard'>".gettext("Karte")."</a>";
 echo "</div>\n";
 
 echo "<div style='margin-left:3%;margin-right:3%;text-align:center;'>\n";
@@ -135,13 +141,14 @@ if( $cmd == 'search' ) {
 	echo "</form>\n";
 }
 
-if( $cmd == 'card' ) {
+if( $cmd == 'parts' ) {
 	echo "<h2>".gettext("Vorhandene Zutaten")."</h2>\n";
 
 	$cols=4;
-	
+	$numc = 1.0/getCocktailNum();
+
 	echo "<form action='' method='post'>\n";
-	echo "<input type='submit' value='".gettext("Karte zeigen")."'><br>\n";
+	echo "<input type='submit' value='".gettext("Setzen und Karte zeigen")."'><br>\n";
 	echo "<input type='hidden' name='cmd' value='showcard'>\n";
 	
 	echo "<center><table>\n";
@@ -156,8 +163,17 @@ if( $cmd == 'card' ) {
 				echo "<input type='checkbox' name='available[]' id='".$part['id']."' value='".$part['id']."'";
 				if( isset( $available[ $part['id'] ] ) ) echo " checked";
 				echo ">\n";
-				echo "<label for='".$part['id']."'>".$part['name']."<br>";
-				echo $part['comment']."</label>";
+				echo "<label for='".$part['id']."'>".$part['name'];
+				if( ($numc > 0 ) && ($part['num'] > 0 ) ){
+					$x=$part['num']*$numc;
+					$perc=round( ( -(($x-1.0)*($x-1)) + 1.0 ) * 15 );
+					echo " <div style='display: inline-block; width: 15px; height: ".$perc."px; background-color: teal;'></div>\n";
+				} else {
+					echo " <div style='display: inline-block; color: red;'>X</div>";
+				}
+				if( $part['comment'] != "" ) echo "<br>".$part['comment'];
+				echo "</label>";
+
 				echo "</td>";
 
 				$col++;
@@ -173,7 +189,7 @@ if( $cmd == 'card' ) {
 		}
 	}
 	echo "</table></center>\n";
-	echo "<input type='submit' value='".gettext("Karte zeigen")."'>\n";
+	echo "<input type='submit' value='".gettext("Setzen und Karte zeigen")."'>\n";
 	echo "</form>";
 }
 

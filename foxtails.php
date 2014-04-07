@@ -1,8 +1,9 @@
 <?php
-$db_name="cocktails.sq3";
-
-require_once( "cocktail_db.php" );
 error_reporting( E_ALL | E_STRICT );
+
+$db_name="foxtails.sq3";
+
+require_once( "foxtail_db.php" );
 
 if( isset($_POST['available']) ) {
     $result="";
@@ -15,21 +16,27 @@ if( isset($_POST['available']) ) {
     setSetting( "available", "$result" );
 }
 
+/*
+ * setting setlang in the address line will trigger language selection
+ * So far this is just for debugging purposes
+ */
 if( isset( $_POST['lang'] ) ) setSetting( "lang", $_POST['lang'] );
+else if( isset( $_GET['setlang'] ) ) selectLanguage();
 $language=getSetting( "lang" );
 if( $language == "" ) selectLanguage();
 
-// $language = "en";
+// $language=http_negotiate_language ( getTranslations() );
 putenv("LANG=" . $language); // Win32
 setlocale(LC_ALL, $language); // Linux
 
-// Set the text domain as "messages"
 $domain = "messages";
-// bindtextdomain($domain, "./locale/nocache"); 
 bindtextdomain($domain, "./locale"); 
 bind_textdomain_codeset($domain, 'UTF-8');
 textdomain($domain);
 
+/*
+ * create a cookie compatible line from the array of all known parts.
+ */
 function allParts() {
 	$result = "";
 	$first=1;
@@ -50,9 +57,16 @@ foreach( $vals as $part ) $available[$part]=$part;
 
 global $admin, $styles;
 
+/*
+ * static definitions and helper arrays
+ */
 $amounts = array( '0.5', '1', '1.5', '2', '2.5', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15' );
 $parttypes = array( gettext("Alkohol (+ 37,5%)"), gettext("Likör"), gettext("Nicht alkoholisch"), gettext("Sonstiges"), gettext("Deko") );
 
+/*
+ * This estimates the alcohol rate of the cocktail and 
+ * returns the guessed category virgin/fruity/cocktail/strong
+ */
 function computeStyleId( $parts ) {
 	$amount=0;
 	$amount=0;
@@ -88,6 +102,10 @@ function computeStyleId( $parts ) {
 	return 4;
 }
 
+/*
+ * estimates the volume of the cocktail. Handy for deciding 
+ * what kind of glass is needed
+ */
 function printAmount( $parts ){
 	$glass=0;
 	$amount=0;
@@ -125,6 +143,10 @@ function printAmount( $parts ){
 	return "( ".$glass."l / ".round($alc/$amount)."% )";
 }
 
+/*
+ * print part by class, gives a first estimate of strength
+ * and headache quotient by the colours.
+ */
 function printPart( $type, $name ) {
 	$desc= "<span style='";
 	switch( $type ) {
@@ -145,6 +167,9 @@ function printPart( $type, $name ) {
 	return $desc;
 }
 
+/*
+ * Create a human readable recipe for the given Cocktail id
+ */
 function getRecipe( $cockid ) {
 	global $admin;
 	$name   = getCocktailName( $cockid );
@@ -173,6 +198,11 @@ function getRecipe( $cockid ) {
 	return $desc;
 }
 
+/*
+ * create a human readable list of ingredients.
+ * This does NOT show any parts of the 'decoration' type!
+ * Used for the menu
+ */
 function getShortList( $cock ) {
 	$name   = $cock['name'];
 	$parts  = getCocktailParts( $cock['id'] );
@@ -183,17 +213,19 @@ function getShortList( $cock ) {
 
 	$first=1;
 	foreach( $parts as $part ) {
-		if( $part['type'] < 4 ) {
+		if( $part['type'] < 3 ) {
 			if( $first == 0 ) $desc .= ", ";
 			else $first=0;
-			if( $part['type'] < 4 ) 
-				$desc .= printPart( $part['type'], $part['name'] );
+			$desc .= printPart( $part['type'], $part['name'] );
 		}
 	}
 	$desc .= " )</i></p>\n";
 	return $desc;
 }
 
+/*
+ * List the given array of Cocktail IDs
+ */
 function listCocktails( $cocktails, $cols=4 ) {
 	global $admin;
 	$col=0;
