@@ -6,6 +6,7 @@
 <HTML>
 <HEAD>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+	<script type="text/javascript" src="foxtails.js"></script>
 	<link rel="stylesheet" type="text/css" href="foxtails.css" >
 	<TITLE>Foxtails</TITLE>
 </HEAD>

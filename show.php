@@ -169,7 +169,7 @@ if( $cmd == 'parts' ) {
 					$perc=round( ( -(($x-1.0)*($x-1)) + 1.0 ) * 15 );
 					echo " <div style='display: inline-block; width: 15px; height: ".$perc."px; background-color: teal;'></div>\n";
 				} else {
-					echo " <div style='display: inline-block; color: red;'>X</div>";
+					echo " <div style='display: inline-block; width: 15px; color: red;'>X</div>";
 				}
 				if( $part['comment'] != "" ) echo "<br>".$part['comment'];
 				echo "</label>";

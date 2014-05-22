@@ -69,7 +69,6 @@ $parttypes = array( gettext("Alkohol (+ 37,5%)"), gettext("Likör"), gettext("Ni
  */
 function computeStyleId( $parts ) {
 	$amount=0;
-	$amount=0;
 	$alc=0;
 	foreach( $parts as $part ) {
 		switch( $part['part'] ) {
@@ -95,6 +94,8 @@ function computeStyleId( $parts ) {
 	}
 
 	if( $alc == 0 ) return 1;
+// Preparation for shooters
+//	if($amount < 2) return 5;
 	$vol=round($alc/$amount);
 	if( $vol < 10 ) return 2;
 	if( $vol < 13 ) return 3;
@@ -137,7 +138,9 @@ function printAmount( $parts ){
 		}
 	}
 	
-	$glass=round(($glass+5)/10)/10;
+// Actually all my receipes are wrong as I was using 1/2oz (~1.5cl) instead of 1cl
+	$glass=round(($glass*1.5)/10)/10;
+	if( 0 == $glass ) $glass=0.1;
 	
 //	return "( ".$amount."cl / ".round($alc/$amount)."% )";
 	return "( ".$glass."l / ".round($alc/$amount)."% )";

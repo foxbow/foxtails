@@ -138,8 +138,9 @@ if( $cmd == 'parts' ) {
 					$x=$part['num']*$numc;
 					$perc=round( ( -(($x-1.0)*($x-1)) + 1.0 ) * 15 );
 					echo " <div style='display: inline-block; width: 15px; height: ".$perc."px; background-color: teal;'></div>\n";
+				} else {
+					echo " <div style='display: inline-block; width: 15px; color: red;'>X</div>";
 				}
-
 				echo "<a href='?cmd=edpart&admin=on&part=".$part['id']."'>".$part['name']."</a>";
 				echo "<br>\n";
 				echo $part['comment'];
