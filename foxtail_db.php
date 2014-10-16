@@ -98,6 +98,7 @@ function db_init(){
 	newType( _('Fruchtig') );
 	newType( _('Cocktail') );
 	newType( _('Hart') );
+	newType( _('Shooter') );
 	newPart( _('Nichts') );
 	newPart( _('Eiswürfel') );
 	newPart( _('Crushed Ice'), '', 3 );

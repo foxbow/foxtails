@@ -94,8 +94,7 @@ function computeStyleId( $parts ) {
 	}
 
 	if( $alc == 0 ) return 1;
-// Preparation for shooters
-//	if($amount < 2) return 5;
+	if($amount < 2) return 5;
 	$vol=round($alc/$amount);
 	if( $vol < 10 ) return 2;
 	if( $vol < 13 ) return 3;
@@ -139,7 +138,8 @@ function printAmount( $parts ){
 	}
 	
 // Actually all my receipes are wrong as I was using 1/2oz (~1.5cl) instead of 1cl
-	$glass=round(($glass*1.5)/10)/10;
+//	$glass=round($glass*1.5)/100;
+	$glass=round(($glass+5)/10)/10;
 	if( 0 == $glass ) $glass=0.1;
 	
 //	return "( ".$amount."cl / ".round($alc/$amount)."% )";
@@ -150,9 +150,10 @@ function printAmount( $parts ){
  * print part by class, gives a first estimate of strength
  * and headache quotient by the colours.
  */
-function printPart( $type, $name ) {
+function printPart( $part ) {
+	global $available;
 	$desc= "<span style='";
-	switch( $type ) {
+	switch( $part['type'] ) {
 	case 0:
 		$desc.="color:#400000;";
 		break;
@@ -166,7 +167,9 @@ function printPart( $type, $name ) {
 		$desc.="color:#000040;";
 		break;
 	}
-	$desc .= "'>$name</span>";
+
+	if( !isset( $available[$part['part']] ) ) $desc.="background-color:#ffe0e0;";
+	$desc .= "'>".$part['name']."</span>";
 	return $desc;
 }
 
@@ -193,7 +196,7 @@ function getRecipe( $cockid ) {
 		$desc .= "<tr><td>&bullet;</td>";
 		$desc .= "<td>".$part['count']."</td>";
 		$desc .= "<td>$measure</td>";
-		$desc .= "<td>".printPart( $part['type'], $part['name'] )."</td>";
+		$desc .= "<td>".printPart( $part )."</td>";
 		$desc .= "<td>".$part['comment']."</td></tr>\n";
 	}
 	$desc .= "</table></table>\n";
@@ -219,11 +222,20 @@ function getShortList( $cock ) {
 		if( $part['type'] < 3 ) {
 			if( $first == 0 ) $desc .= ", ";
 			else $first=0;
-			$desc .= printPart( $part['type'], $part['name'] );
+			$desc .= printPart( $part );
 		}
 	}
 	$desc .= " )</i></p>\n";
 	return $desc;
+}
+
+function allthere( $id ) {
+	global $available;
+	$parts = getCocktailParts( $id );
+	foreach( $parts as $part ) {
+		if( !isset( $available[ $part['part'] ] ) ) return false;
+	}
+	return true;
 }
 
 /*
@@ -235,7 +247,11 @@ function listCocktails( $cocktails, $cols=4 ) {
 	echo "<center><table>\n";
 	foreach( $cocktails as $cocktail ) {
 		if( 0 == $col ) echo "<tr>";
-		echo "<td id='item'><a href='?cmd=show&id=".$cocktail['id'];
+		if( allthere( $cocktail['id'] ) ) 
+			echo "<td id='item'>";
+		else
+			echo "<td id='noitem'>";
+		echo "<a href='?cmd=show&id=".$cocktail['id'];
 		if( $admin == 'on' ) echo "&admin=on";
 		echo "'><b>".$cocktail['name']."</b></a>";
 		if( isset( $cocktail['rank'] ) ) {
@@ -250,7 +266,6 @@ function listCocktails( $cocktails, $cols=4 ) {
 		}
 
 		echo printAmount( getCocktailParts( $cocktail['id'] ) );
-
 
 		echo "</td>";
 		$col++;

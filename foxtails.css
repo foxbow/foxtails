@@ -13,8 +13,14 @@ div#linklist {
 	margin:5px;
 	text-align:center;
 }
+
 td#item {
 	padding:5px;
 	background-color:#eee;
+}
+
+td#noitem {
+	padding:5px;
+	background-color:#fee;
 }
 
