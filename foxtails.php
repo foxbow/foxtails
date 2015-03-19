@@ -168,7 +168,9 @@ function printPart( $part ) {
 		break;
 	}
 
-	if( !isset( $available[$part['part']] ) ) $desc.="background-color:#ffe0e0;";
+    if( isset( $part['part'] ) ) $partid=$part['part'];
+    else $partid=$part['id'];
+	if( !isset( $available[$partid] ) ) $desc.="background-color:#ffe0e0;";
 	$desc .= "'>".$part['name']."</span>";
 	return $desc;
 }

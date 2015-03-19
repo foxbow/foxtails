@@ -88,7 +88,7 @@ if( $cmd == 'types' ) {
 if( $cmd == 'edpart' ) {
 	$partid=$_GET['part'];
 	$part = getPart( $partid );
-	echo "<h2>".printPart( $part['type'], $part['name'] )."</h2>\n";
+	echo "<h2>".printPart( $part )."</h2>\n";
     echo "<form action='' method='post'>\n";
     echo "  Name: <input name='name' type='text' value='".$part['name']."'><br>\n";
     echo "	Kommentar: <input name='comment' type='text' value='".$part['comment']."'><br>\n";
