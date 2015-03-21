@@ -43,6 +43,16 @@ if( $cmd == 'longlist' ) {
 	}
 }
 
+if( $cmd == 'cardlist' ) {
+	$ids=explode( ",", $_GET['ids'] );
+	foreach( $ids as $id ) {
+		if( $id != "" ) {
+			$ct=getCocktail( $id );
+			echo getShortList( $ct );
+		}
+	}
+}
+
 if( $cmd == 'search' ) {
 	if( isset( $_POST['id0'] ) ){
 		$ids=array( $_POST['id0'], $_POST['id1'],$_POST['id2'],$_POST['id3'], );
@@ -80,11 +90,12 @@ if( $cmd == 'search' ) {
 
 	if( isset( $cocktails ) ){
 		listCocktails( $cocktails );
-		$link="?cmd=longlist&ids=";
+		$clist="";
 		foreach( $cocktails as $cockid ) {
-			$link=$link.$cockid['id'].",";
+			$clist=$clist.$cockid['id'].",";
 		}
-		echo "<a href='$link'>".gettext("Lange Liste")."</a>\n";
+		echo "<a href='?cmd=longlist&ids=$clist'>".gettext("Lange Liste")."</a> - \n";
+		echo "<a href='?cmd=cardlist&ids=$clist'>".gettext("Karte")."</a>\n";
 		echo "<hr>\n";
 	}
 
