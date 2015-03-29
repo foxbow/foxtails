@@ -107,24 +107,23 @@ function computeStyleId( $parts ) {
  * what kind of glass is needed
  */
 function printAmount( $parts ){
-	$glass=0;
-	$amount=0;
-	$alc=0;
+	$glass=0;   // Space used in glass
+	$amount=0;  // Actual content
+	$alc=0;     // Estimated strength
 	foreach( $parts as $part ) {
 		switch( $part['part'] ) {
 		case 1: // Nichts
 			break;
 		case 2: // Eiswürfel
-			$glass += $part['count'];
-			$amount += $part['count'] * 0.25;
+			$glass += $part['count'] * 0.5;  // Icecube counts as 0.005l
+			$amount += $part['count'] * 0.5;
 			break;
 		case 3: // Crushed Ice
 			$glass += $part['count'];
-			$amount += $part['count'] * 0.5;
+			$amount += $part['count'] * 0.5;  // Half of the ice is actually water
 			break;
 		case 4: // Rocks
 			$glass += $part['count'];
-			// $amount += $part['count'] * 0.25;
 			break;
 		default:
 			if( $part['measure'] == 1 ){
@@ -136,13 +135,10 @@ function printAmount( $parts ){
 			break;
 		}
 	}
+
+	// round up, so a 0.21l drink will ask for a 0.3l glass	
+	$glass=round(($glass+4)/10)/10;
 	
-// Actually all my receipes are wrong as I was using 1/2oz (~1.5cl) instead of 1cl
-//	$glass=round($glass*1.5)/100;
-	$glass=round(($glass+5)/10)/10;
-	if( 0 == $glass ) $glass=0.1;
-	
-//	return "( ".$amount."cl / ".round($alc/$amount)."% )";
 	return "( ".$glass."l / ".round($alc/$amount)."% )";
 }
 
