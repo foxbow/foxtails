@@ -83,7 +83,7 @@ function db_exec( $SQL, $param=array() ){
 function db_init(){
     $cid = db_open();
 	$cid->beginTransaction();
-	$cid->exec( "CREATE TABLE cocktail ( id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR( 32 ) UNIQUE, recipe VARCHAR( 1024 ), type INT, ice INT );" );
+	$cid->exec( "CREATE TABLE cocktail ( id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR( 32 ) UNIQUE, recipe VARCHAR( 1024 ), type INT, ice INT, rate INT );" );
 	$cid->exec( "CREATE TABLE recipe ( cockid INTEGER, measure INTEGER, count INTEGER, part INTEGER );" );
 	$cid->exec( "CREATE TABLE measure ( id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR( 32 ) UNIQUE );" );
 	$cid->exec( "CREATE TABLE part ( id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR( 32 ) UNIQUE, comment VARCHAR( 128 ), type INTEGER );" );
@@ -105,6 +105,10 @@ function db_init(){
 	newPart( _('Rocks') );
 }
 
+function rateCocktail( $id, $stars ) {
+	db_exec( "UPDATE cocktail SET rate=? WHERE id=?;", array( $stars, $id ) );
+}
+
 function newPart( $name, $comment="", $type=4 ) {
 	db_exec( "INSERT OR IGNORE INTO part (name, comment, type) VALUES (?,?,?);", array( $name, $comment, $type ) );
 }
@@ -122,7 +126,7 @@ function newMeasure( $name ) {
 }
 
 function addCocktail( $name, $recipe ) {
-	$res = db_exec( "INSERT OR IGNORE INTO cocktail (name, recipe) VALUES (?,?);", array( $name, $recipe ) );
+	$res = db_exec( "INSERT OR IGNORE INTO cocktail (name, recipe, rate) VALUES (?,?,0);", array( $name, $recipe ) );
 	return getCocktailID( $name );
 }
 
@@ -224,7 +228,7 @@ function getCocktails( ) {
 }
 
 function getCocktail( $id ) {
-	$res = db_exec( "SELECT id, name, type FROM cocktail WHERE id=?;", array( $id ) );
+	$res = db_exec( "SELECT * FROM cocktail WHERE id=?;", array( $id ) );
 	if( isset( $res[0] ) ){
 		return $res[0];
 	} else {
@@ -335,7 +339,7 @@ function findCocktailsWithout( $noparts ) {
  * returns an array of cocktails of the type $typeid
 **/
 function findCocktailsByType( $typeid ) {
-	$res = db_exec( "SELECT id,name FROM cocktail WHERE type=?;", array( $typeid ) );
+	$res = db_exec( "SELECT * FROM cocktail WHERE type=?;", array( $typeid ) );
 	return $res;
 }
 

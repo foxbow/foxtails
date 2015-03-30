@@ -34,6 +34,14 @@ bindtextdomain($domain, "./locale");
 bind_textdomain_codeset($domain, 'UTF-8');
 textdomain($domain);
 
+if( isset( $_GET['cmd'] ) ) {
+    if( $_GET['cmd'] == "qsetrate" ) {
+        rateCocktail( $_GET['cid'], $_GET['rate'] );
+        echo "rateCocktail( ".$_GET['cid'].", ".$_GET['rate']." );";
+        return;
+    }
+}
+
 /*
  * create a cookie compatible line from the array of all known parts.
  */
@@ -210,9 +218,30 @@ function getRecipe( $cockid ) {
 function getShortList( $cock ) {
 	$name   = $cock['name'];
 	$parts  = getCocktailParts( $cock['id'] );
+    $rate   = $cock['rate'];
+    if( $rate == "" ) $rate=0;
 
 	$desc = "<p>".$cock['id']." - ";
-	$desc .= "<a href='?cmd=show&id=".$cock['id']."'><b>$name</b></a> ".printAmount($parts)."<br>\n";
+	$desc .= "<a href='?cmd=show&id=".$cock['id']."'><b>$name</b></a> ";
+	$desc .= "<span id='dr".$cock['id']."' onclick='toggle(".$cock['id'].")' title='$rate'>";
+	$desc .= printAmount($parts);
+	$desc .= "</span>";
+	$desc .= "<span id='cr".$cock['id']."' rate='$rate' style='color:";
+	switch( $rate ) {
+	    case 1:
+    	    $desc .= "#f00;'>";
+	        $desc .= "&nbsp;&hearts;";
+	    break;
+	    case 2:
+	        $desc .= "#000;'>";
+	        $desc .= "&nbsp;&#9760;";
+	    break;
+	    default:
+	        $desc .= "#000;'>";
+	    break;
+	}
+	$desc .= "</span>";
+	$desc .= "<br>\n";
 	$desc .= "<i>( ";
 
 	$first=1;
