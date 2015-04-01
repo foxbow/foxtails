@@ -128,7 +128,7 @@ function printAmount( $parts ){
 			break;
 		case 3: // Crushed Ice
 			$glass += $part['count'];
-			$amount += $part['count'] * 0.5;  // Half of the ice is actually water
+			$amount += $part['count'] * 0.5;  // Half of the ice is air
 			break;
 		case 4: // Rocks
 			$glass += $part['count'];
@@ -147,7 +147,7 @@ function printAmount( $parts ){
 	// round up, so a 0.21l drink will ask for a 0.3l glass	
 	$glass=round(($glass+4)/10)/10;
 	
-	return "( ".$glass."l / ".round($alc/$amount)."% )";
+	return "(&nbsp;".$glass."l&nbsp;/&nbsp;".round($alc/$amount)."%&nbsp;)";
 }
 
 /*
@@ -190,9 +190,10 @@ function getRecipe( $cockid ) {
 	$recipe = getCocktailRecipe( $cockid );
 
 	if( $admin == 'on' ) {
-		$desc =  "<a href='?cmd=edit&admin=on&id=$cockid'><h3>$name</h3></a>\n";
+		$desc =  "<h3><a href='?cmd=edit&admin=on&id=$cockid'>$name</a>";
+		$desc .= printRate( getCocktail( $cockid ) )."</h3>\n";
 	} else {
-		$desc =  "<h3>$name</h3>\n";
+		$desc =  "<h3>$name".printRate( getCocktail( $cockid ) )."</h3>\n";
 	}
 
 	$desc .= "<b>$type</b> ".printAmount($parts)."<br>\n";
@@ -210,6 +211,47 @@ function getRecipe( $cockid ) {
 	return $desc;
 }
 
+/**
+ * prints the star rating of a cocktail
+ * also adds the foundation needed for changing the rating
+ */
+function printRate( $cock ) {
+    $rate   = $cock['rate'];
+    if( $rate == "" ) $rate=0;
+
+	$desc = "<span id='cr".$cock['id']."' title='$rate' ";
+	$desc .= "onselectstart='return false' ";
+	$desc .= "onclick='toggle(".$cock['id'].")' style='color:";
+	switch( $rate ) {
+	    case 1:
+	        $desc .= "#300;'>&nbsp;";
+	        $desc .= "&#9760;&#9734;&#9734;&#9734;&#9734;";
+	    break;
+	    case 2:
+	        $desc .= "#600;'>&nbsp;";
+	        $desc .= "&#9733;&#9733;&#9734;&#9734;&#9734;";
+	    break;
+	    case 3:
+	        $desc .= "#900;'>&nbsp;";
+	        $desc .= "&#9733;&#9733;&#9733;&#9734;&#9734;";
+	    break;
+	    case 4:
+	        $desc .= "#b00;'>&nbsp;";
+	        $desc .= "&#9733;&#9733;&#9733;&#9733;&#9734;";
+	    break;
+	    case 5:
+	        $desc .= "#f00;'>&nbsp;";
+	        $desc .= "&#9733;&#9733;&#9733;&#9733;&#9733;";
+	    break;
+	    default:
+	        $desc .= "#000;'>&nbsp;";
+	        $desc .= "&#9734;&#9734;&#9734;&#9734;&#9734;";
+	    break;
+	}
+	$desc .= "</span>";
+	return $desc;
+}
+
 /*
  * create a human readable list of ingredients.
  * This does NOT show any parts of the 'decoration' type!
@@ -218,29 +260,11 @@ function getRecipe( $cockid ) {
 function getShortList( $cock ) {
 	$name   = $cock['name'];
 	$parts  = getCocktailParts( $cock['id'] );
-    $rate   = $cock['rate'];
-    if( $rate == "" ) $rate=0;
 
 	$desc = "<p>".$cock['id']." - ";
 	$desc .= "<a href='?cmd=show&id=".$cock['id']."'><b>$name</b></a> ";
-	$desc .= "<span id='dr".$cock['id']."' onclick='toggle(".$cock['id'].")' title='$rate'>";
 	$desc .= printAmount($parts);
-	$desc .= "</span>";
-	$desc .= "<span id='cr".$cock['id']."' rate='$rate' style='color:";
-	switch( $rate ) {
-	    case 1:
-    	    $desc .= "#f00;'>";
-	        $desc .= "&nbsp;&hearts;";
-	    break;
-	    case 2:
-	        $desc .= "#000;'>";
-	        $desc .= "&nbsp;&#9760;";
-	    break;
-	    default:
-	        $desc .= "#000;'>";
-	    break;
-	}
-	$desc .= "</span>";
+    $desc .= printRate($cock);
 	$desc .= "<br>\n";
 	$desc .= "<i>( ";
 
@@ -268,7 +292,7 @@ function allthere( $id ) {
 /*
  * List the given array of Cocktail IDs
  */
-function listCocktails( $cocktails, $cols=4 ) {
+function listCocktails( $cocktails, $cols=5 ) {
 	global $admin;
 	$col=0;
 	echo "<center><table>\n";
@@ -281,11 +305,8 @@ function listCocktails( $cocktails, $cols=4 ) {
 		echo "<a href='?cmd=show&id=".$cocktail['id'];
 		if( $admin == 'on' ) echo "&admin=on";
 		echo "'><b>".$cocktail['name']."</b></a>";
-		if( isset( $cocktail['rank'] ) ) {
-			echo " ";
-			for( $j=0; $j<$cocktail['rank']; $j++ ) echo "*";
-		}
-
+		echo "<br>";
+		echo printRate( $cocktail );
 		echo "<br>";
 		if( isset( $cocktail['type'] ) && $cocktail['type'] != 1 ){
 			$type = getTypeName( $cocktail['type'] );

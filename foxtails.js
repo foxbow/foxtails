@@ -39,14 +39,13 @@ function setnum( entrynum, amount ) {
 
 
 
-function toggle(id,stars){
+function toggle(id){
 	var xmlhttp=new XMLHttpRequest();
     var e=document.getElementById('cr'+id )
-    var d=document.getElementById('dr'+id )
-    var stars=d.title;
-    stars=(stars+1)%3;
-    
-//     alert( "stars="+stars );
+    var stars;// =e.title;
+    stars=(parseInt(e.title)+1)%6;
+
+//    alert( "stars="+stars );
     
 	xmlhttp.onreadystatechange=function() {
   		if (xmlhttp.readyState==4 ) {
@@ -55,19 +54,31 @@ function toggle(id,stars){
   			}else{
   			    switch( stars ) {
   			        case 1:
-                        e.style.color='#f00'
-                        e.innerHTML="&nbsp;&hearts;";
+                        e.style.color='#300'
+                        e.innerHTML="&nbsp;&#9760;&#9734;&#9734;&#9734;&#9734;";
   			        break;
   			        case 2:
-                        e.style.color='#000'
-                        e.innerHTML="&nbsp;&#9760;";  			        
+                        e.style.color='#600'
+                        e.innerHTML="&nbsp;&#9733;&#9733;&#9734;&#9734;&#9734;";
+  			        break;
+  			        case 3:
+                        e.style.color='#900'
+                        e.innerHTML="&nbsp;&#9733;&#9733;&#9733;&#9734;&#9734;";
+  			        break;
+  			        case 4:
+                        e.style.color='#b00'
+                        e.innerHTML="&nbsp;&#9733;&#9733;&#9733;&#9733;&#9734;";
+  			        break;
+  			        case 5:
+                        e.style.color='#f00'
+                        e.innerHTML="&nbsp;&#9733;&#9733;&#9733;&#9733;&#9733;";
   			        break;
   			        default:
                         e.style.color='#000'
-                        e.innerHTML="";
+                        e.innerHTML="&nbsp;&#9734;&#9734;&#9734;&#9734;&#9734;";
                     break;
                 }
-                d.title=stars;
+                e.title=stars;
             }
 		}
     }
