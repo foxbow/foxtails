@@ -40,6 +40,13 @@ if( isset( $_GET['cmd'] ) ) {
         echo "rateCocktail( ".$_GET['cid'].", ".$_GET['rate']." );";
         return;
     }
+    if( $_GET['cmd'] == "booklet" ) {
+        header('Content-type: application/postscript');
+        header('Content-Disposition: attachment; filename="cocktails.ps"');
+       	$cocktails = getCocktailsNum();
+        booklet( $cocktails );
+        return;
+    }
 }
 
 /*
@@ -68,8 +75,10 @@ global $admin, $styles;
 /*
  * static definitions and helper arrays
  */
-$amounts = array( '0.5', '1', '1.5', '2', '2.5', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15' );
-$parttypes = array( gettext("Alkohol (+ 37,5%)"), gettext("Likör"), gettext("Nicht alkoholisch"), gettext("Sonstiges"), gettext("Deko") );
+$amounts = array( '0.5', '1', '1.5', '2', '2.5', '3', '4', '5', '6', '7', '8', 
+        '9', '10', '11', '12', '13', '14', '15' );
+$parttypes = array( gettext("Alkohol (+ 37,5%)"), gettext("Likör"), 
+        gettext("Nicht alkoholisch"), gettext("Sonstiges"), gettext("Deko") );
 
 /*
  * This estimates the alcohol rate of the cocktail and 
@@ -197,7 +206,8 @@ function getRecipe( $cockid ) {
 	}
 
 	$desc .= "<b>$type</b> ".printAmount($parts)."<br>\n";
-	$desc .= "<center><table border='0'>";
+//	$desc .= "<center><table border='0'>";
+	$desc .= "<table border='0'>";
 	foreach( $parts as $part ) {
 		$measure  = getMeasure( $part['measure'] );
 		$desc .= "<tr><td>&bullet;</td>";
@@ -206,7 +216,8 @@ function getRecipe( $cockid ) {
 		$desc .= "<td>".printPart( $part )."</td>";
 		$desc .= "<td>".$part['comment']."</td></tr>\n";
 	}
-	$desc .= "</table></table>\n";
+//	$desc .= "</table></center>\n";
+	$desc .= "</table>\n";
 	$desc .= "<p>".str_replace( "\n", "<br/>", $recipe)."</p>\n";
 	return $desc;
 }
@@ -327,6 +338,125 @@ function listCocktails( $cocktails, $cols=5 ) {
 		echo "</tr>\n";
 	}
 	echo "</table></center>\n";
+}
+
+/**
+ * make a line of text Postscript compatible, especially replacing
+ * Umlaute
+ * @todo: this may still create bogus stuff when brackets are involved
+ */
+function toPS( $text ) {
+    $text = trim( $text );
+    $text = str_replace( "&nbsp;", " ", $text );
+    $text = str_replace( "ä", ") show /adieresis glyphshow (", $text );
+    $text = str_replace( "ö", ") show /odieresis glyphshow (", $text );
+    $text = str_replace( "ü", ") show /udieresis glyphshow (", $text );
+    $text = str_replace( "Ä", ") show /Adieresis glyphshow (", $text );
+    $text = str_replace( "Ö", ") show /Odieresis glyphshow (", $text );
+    $text = str_replace( "Ü", ") show /Udieresis glyphshow (", $text );
+    $text = str_replace( "ß", ") show /germandbls glyphshow (", $text );
+    $retval="($text) show\n";
+    return $retval;
+}
+
+/**
+ * break a bunch of text up in multiple lines for output in Postscript
+ */
+function toMultiLine( $text, $offset ) {
+    $retval = "";
+    $buff="";
+    $lines = explode( "\n", $text );
+    foreach( $lines as $line ) {
+        $words = explode( " ", $line );
+        foreach( $words as $word ) {
+            if( ( strlen($buff) + strlen( $word ) ) > 90 ) {
+                $retval .= "20 $offset moveto\n";
+                $retval .= toPS( $buff );
+                $offset -= 13;
+                $buff = "";
+            }
+            $buff .= $word." ";
+        }
+        if( trim($buff) != "" ) {
+            $retval .= "20 $offset moveto\n";
+            $retval .= toPS( $buff );
+            $offset -= 13;
+            $buff="";
+        }            
+    }
+    return array( $retval, $offset );
+}
+
+/**
+ * create a postscript representation of a cocktail
+ */
+function psRecipe( $cockid, $offset ) {
+	$name   = getCocktailName( $cockid );
+	$type	= getCocktailType( $cockid );
+	$parts  = getCocktailParts( $cockid );
+	$recipe = getCocktailRecipe( $cockid );
+
+    $offset -= 16;
+    $desc = "/Times-Roman findfont 16 scalefont setfont\n";
+    $desc .= "20 $offset moveto\n";
+    $desc .= toPS( "[$cockid] $name - $type ".printAmount($parts));
+    $offset -= 20;
+    $desc .= "/Helvetica findfont 12 scalefont setfont\n";
+	foreach( $parts as $part ) {
+	    $desc .= "20 $offset moveto\n";
+		$desc .= toPS( $part['count']." ".getMeasure( $part['measure'] ) );
+	    $desc .= "75 $offset moveto\n";
+	    $buff = $part['name'];
+		if( $part['comment'] != "" ) $buff .= " - ".$part['comment'];
+		$desc .= toPS($buff);
+		$offset -= 14;
+	}
+    $offset -= 10;
+    $desc .= "/Times-Roman findfont 12 scalefont setfont\n";
+    $res = toMultiLine( $recipe, $offset );
+    $offset=$res[1];
+	$desc .= $res[0];
+    $offset -= 10;
+	return array( $desc, $offset );
+}
+
+/**
+ * create a postscript file for all cocktail recipes
+ * takes care of basic layout too
+ * @todo: some output prettification
+ */
+function booklet( $cocktails ) {
+    echo "%!PS-Adobe-2.0
+
+%%Creator: Foxtails
+%%Title: Cocktails
+%%DocumentData: Clean8Bit
+%%Origin: 0 0
+%%LanguageLevel: 2
+%%DocumentMedia: a4 595 842 0 () ()
+
+%%Page: 1 1\n";
+
+    $page=1;
+    $offset=822;
+	if( !empty( $cocktails ) ) {
+		foreach( $cocktails as $cocktail ) {
+		    $info=psRecipe( $cocktail['id'], $offset );
+		    if( $info[1] < 40 ) {
+                echo "showpage\n";
+                $page++;
+                echo "%%Page: $page $page\n";
+                $offset = 822;
+			    $info=psRecipe( $cocktail['id'], $offset );
+            }
+            $offset=$info[1];
+			echo $info[0];
+		}
+	}
+
+    echo "showpage
+%%EOF\n";
+    return;
 }
 
 $admin='off';

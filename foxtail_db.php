@@ -227,6 +227,11 @@ function getCocktails( ) {
 	return $res;
 }
 
+function getCocktailsNum( ) {
+	$res = db_exec( "SELECT * FROM cocktail ORDER BY id;" );
+	return $res;
+}
+
 function getCocktail( $id ) {
 	$res = db_exec( "SELECT * FROM cocktail WHERE id=?;", array( $id ) );
 	if( isset( $res[0] ) ){

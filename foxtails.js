@@ -83,6 +83,8 @@ function toggle(id){
 		}
     }
 
+    e.style.color='#000';
+    e.innerHTML="&nbsp<b>-----</b>";
 	xmlhttp.open("GET", "?cmd=qsetrate&cid="+id+"&rate="+stars, true);
 	xmlhttp.send();
     

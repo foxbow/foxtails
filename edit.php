@@ -385,6 +385,7 @@ if( $cmd == 'show' ) {
 echo "</div>\n";
 echo "<div id='linklist'>\n";
 echo "<a href='?admin=off'>".gettext("Anzeigen")."</a> - ";
+echo "<a href='foxtails.php?cmd=booklet'>".gettext("Drucken")."</a> - ";
 echo "<a href='?admin=logoff'>".gettext("Abmelden")."</a>";
 echo "</div>\n";
 ?>
