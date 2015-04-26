@@ -197,17 +197,17 @@ function getRecipe( $cockid ) {
 	$type	= getCocktailType( $cockid );
 	$parts  = getCocktailParts( $cockid );
 	$recipe = getCocktailRecipe( $cockid );
-
+	
 	if( $admin == 'on' ) {
 		$desc =  "<h3><a href='?cmd=edit&admin=on&id=$cockid'>$name</a>";
 		$desc .= printRate( getCocktail( $cockid ) )."</h3>\n";
 	} else {
-		$desc =  "<h3>$name".printRate( getCocktail( $cockid ) )."</h3>\n";
+		$desc =  "<h3>$cockid - $name".printRate( getCocktail( $cockid ) )."</h3>\n";
 	}
 
 	$desc .= "<b>$type</b> ".printAmount($parts)."<br>\n";
-//	$desc .= "<center><table border='0'>";
-	$desc .= "<table border='0'>";
+	$desc .= "<center><table border='0'>";
+//	$desc .= "<table border='0'>";
 	foreach( $parts as $part ) {
 		$measure  = getMeasure( $part['measure'] );
 		$desc .= "<tr><td>&bullet;</td>";
@@ -216,8 +216,8 @@ function getRecipe( $cockid ) {
 		$desc .= "<td>".printPart( $part )."</td>";
 		$desc .= "<td>".$part['comment']."</td></tr>\n";
 	}
-//	$desc .= "</table></center>\n";
-	$desc .= "</table>\n";
+	$desc .= "</table></center>\n";
+//	$desc .= "</table>\n";
 	$desc .= "<p>".str_replace( "\n", "<br/>", $recipe)."</p>\n";
 	return $desc;
 }
@@ -313,7 +313,8 @@ function listCocktails( $cocktails, $cols=5 ) {
 			echo "<td id='item'>";
 		else
 			echo "<td id='noitem'>";
-		echo "<a href='?cmd=show&id=".$cocktail['id'];
+		echo $cocktail['id'];
+		echo ". <a href='?cmd=show&id=".$cocktail['id'];
 		if( $admin == 'on' ) echo "&admin=on";
 		echo "'><b>".$cocktail['name']."</b></a>";
 		echo "<br>";
