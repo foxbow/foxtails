@@ -85,37 +85,14 @@ $parttypes = array( gettext("Alkohol (+ 37,5%)"), gettext("Likör"),
  * returns the guessed category virgin/fruity/cocktail/strong
  */
 function computeStyleId( $parts ) {
-	$amount=0;
-	$alc=0;
-	foreach( $parts as $part ) {
-		switch( $part['part'] ) {
-		case 1: // Nichts
-			break;
-		case 2: // Eiswürfel
-			$amount += $part['count'] * 0.25;
-			break;
-		case 3: // Crushed Ice
-			$amount += $part['count'] * 0.5;
-			break;
-		case 4: // Rocks
-			// $amount += $part['count'] * 0.25;
-			break;
-		default:
-			if( $part['measure'] == 1 ){
-				$amount += $part['count'];
-				if( $part['type'] == 0 ) $alc += $part['count']*40;
-				if( $part['type'] == 1 ) $alc += $part['count']*20;
-			}
-			break;
-		}	
-	}
 
-	if( $alc == 0 ) return 1;
-	if($amount < 2) return 5;
-	$vol=round($alc/$amount);
+	$amount=getAmount( $parts );
+	if( $amount['alc'] == 0 ) return 1;
+	if($amount['amount'] < 2) return 5;
+	$vol=round($amount['alc']/$amount['amount']);
 	if( $vol < 10 ) return 2;
 	if( $vol < 13 ) return 3;
-	if( ( $vol < 15) && ( $alc < 200 ) ) return 3;
+	if( ( $vol < 15) && ( $amount['alc'] < 200 ) ) return 3;
 	return 4;
 }
 
@@ -123,7 +100,7 @@ function computeStyleId( $parts ) {
  * estimates the volume of the cocktail. Handy for deciding 
  * what kind of glass is needed
  */
-function printAmount( $parts ){
+function getAmount( $parts ) {
 	$glass=0;   // Space used in glass
 	$amount=0;  // Actual content
 	$alc=0;     // Estimated strength
@@ -152,11 +129,21 @@ function printAmount( $parts ){
 			break;
 		}
 	}
+    // round up, so a 0.21l drink will ask for a 0.3l glass	
+	$glass=round(($glass+4)/10)*10;
 
-	// round up, so a 0.21l drink will ask for a 0.3l glass	
-	$glass=round(($glass+4)/10)/10;
-	
-	return "(&nbsp;".$glass."l&nbsp;/&nbsp;".round($alc/$amount)."%&nbsp;)";
+	return( array( "amount" => $amount, "glass"=>$glass, "alc"=>$alc ) );
+}
+
+/*
+ * estimates the volume of the cocktail. Handy for deciding 
+ * what kind of glass is needed
+ */
+function printAmount( $parts ){
+    $amount=getAmount( $parts );
+    $line  = "(&nbsp;".($amount['glass']/100)."l&nbsp;/&nbsp;";
+    $line .= round($amount['alc']/$amount['amount'])."%&nbsp;)";
+    return $line;
 }
 
 /*
@@ -190,14 +177,19 @@ function printPart( $part ) {
 
 /*
  * Create a human readable recipe for the given Cocktail id
+ * set target measure in $target, if $target is 0 the standard is used
+ * $target is number of measure[1] which is cl or oz
+ *
+ * @todo: see if this really makes sense..
  */
-function getRecipe( $cockid ) {
+function getRecipe( $cockid, $target=-1 ) {
 	global $admin;
 	$name   = getCocktailName( $cockid );
 	$type	= getCocktailType( $cockid );
 	$parts  = getCocktailParts( $cockid );
 	$recipe = getCocktailRecipe( $cockid );
 	
+	// print rating stars
 	if( $admin == 'on' ) {
 		$desc =  "<h3><a href='?cmd=edit&admin=on&id=$cockid'>$name</a>";
 		$desc .= printRate( getCocktail( $cockid ) )."</h3>\n";
@@ -205,9 +197,51 @@ function getRecipe( $cockid ) {
 		$desc =  "<h3>$cockid - $name".printRate( getCocktail( $cockid ) )."</h3>\n";
 	}
 
-	$desc .= "<b>$type</b> ".printAmount($parts)."<br>\n";
+    // find and apply factor
+    if ( 0 < $target ) {
+        $original=getAmount( $parts );
+        $glass =$original['glass'];
+        $amount=$original['amount'];
+        
+        // target without fix parts
+        $factor=( $target-($glass-$amount) ) / $amount;
+        
+        for( $i=0; $i<count($parts); $i++ ) {
+            // only change the basic measure (cl/oz)
+            // dashes and pieces etc. stay the same
+            if( 1 == $parts[$i]['measure'] ) {
+                $val=$factor*$parts[$i]['count'];
+                // round down to nearest .5
+                $parts[$i]['count']=round( (2*$val) )/2;
+            }
+        }
+    }
+    
+    if( -1 == $target ) {
+       	$desc .= "<b>$type</b> ".printAmount($parts);
+    } else {
+	    $desc .= "<form action='' method='get'>\n";
+       	$desc .= "<b>$type</b> ";	    
+	    $desc .= "<input type='hidden' name='id' value='$cockid'>\n";
+	    $desc .= "<input type='hidden' name='cmd' value='show'>\n";
+	    $desc .= "(&nbsp;";    
+        $amount=getAmount($parts);
+        $glass=$amount['glass'];
+       	$desc .= "<select name='glass' onchange=\"window.location='?cmd=show&id=$cockid&glass='+this.options[this.selectedIndex].value\">\n";
+       	for( $i = 10; $i <= 50; $i+=5 ) {
+		    if( $glass == $i ) { 
+          		$desc .= "  <option selected value='$i'>".($i/100)."l";
+     		} else {
+          		$desc .= "  <option value='$i'>".($i/100)."l";
+           	}
+           	$desc .= "</option>\n";
+        }
+	    $desc .= "</select>"; 
+	    $desc .= "/&nbsp;".round($amount['alc']/$amount['amount'])."%&nbsp;)";
+	    $desc .= "</form>\n";
+	}
+	$desc .= "<br>\n";
 	$desc .= "<center><table border='0'>";
-//	$desc .= "<table border='0'>";
 	foreach( $parts as $part ) {
 		$measure  = getMeasure( $part['measure'] );
 		$desc .= "<tr><td>&bullet;</td>";
@@ -217,7 +251,6 @@ function getRecipe( $cockid ) {
 		$desc .= "<td>".$part['comment']."</td></tr>\n";
 	}
 	$desc .= "</table></center>\n";
-//	$desc .= "</table>\n";
 	$desc .= "<p>".str_replace( "\n", "<br/>", $recipe)."</p>\n";
 	return $desc;
 }

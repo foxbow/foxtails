@@ -209,10 +209,25 @@ if( $cmd == 'all' ) {
 	$cocktails = getCocktails();
 	listCocktails( $cocktails );
 }
+/*
+      <form action="http://dict.leo.org/" method="get" target="_blank">
+        <input id="search_keyword" name="search" value="Stichwort" size="8" type="text" onblur="if(this.value=='')this.value='Stichwort';" onfocus="this.value='';" ><br >
+        <select onmouseup="window.open(this.options[this.selectedIndex].value+document.getElementById('search_keyword').value),'suchen'" onchange="window.open(this.options[this.selectedIndex].value+document.getElementById('search_keyword').value),'suchen'">
+          <option value="http://dict.leo.org/?search=">Übersetzen</option>
+          <option value="http://www.google.de/search?q=">bei Google</option>
+          <option value="http://de.wikipedia.org/wiki/Spezial:Search?search=">in Wikipedia</option>
+          <option value="http://kol.coldfront.net/thekolwiki/index.php/Special:Search?search=">im KOL Wiki</option>
+          <option value="http://search.ebay.de//search/search.dll?satitle=">bei EBay</option>
+          <option value="http://ebm.foxbow.de/search.php?search=">in Bookmarks</option>
+          <option value="http://freshmeat.net/search/?q=">bei Freshmeat</option>
+        </select>
+*/
 
 if( $cmd == 'show' ) {
 	$cockid=$_GET['id'];
-	echo getRecipe( $cockid );
+	if( isset( $_GET['glass'] ) ) $glass=$_GET['glass'];
+	else $glass=0;
+	echo getRecipe( $cockid, $glass );
 }
 
 echo "</div>\n";
