@@ -396,14 +396,14 @@ function toPS( $text ) {
 /**
  * break a bunch of text up in multiple lines for output in Postscript
  */
-function toMultiLine( $text, $offset ) {
+function toMultiLine( $text, $offset, $width ) {
     $retval = "";
     $buff="";
     $lines = explode( "\n", $text );
     foreach( $lines as $line ) {
         $words = explode( " ", $line );
         foreach( $words as $word ) {
-            if( ( strlen($buff) + strlen( $word ) ) > 90 ) {
+            if( ( strlen($buff) + strlen( $word ) ) > $width/6 ) { // 90 ) {
                 $retval .= "20 $offset moveto\n";
                 $retval .= toPS( $buff );
                 $offset -= 13;
@@ -424,20 +424,55 @@ function toMultiLine( $text, $offset ) {
 /**
  * create a postscript representation of a cocktail
  */
-function psRecipe( $cockid, $offset ) {
+function psRecipe( $cockid, $offset, $width ) {
 	$name   = getCocktailName( $cockid );
 	$type	= getCocktailType( $cockid );
 	$parts  = getCocktailParts( $cockid );
 	$recipe = getCocktailRecipe( $cockid );
 
     $offset -= 16;
-    $desc = "/Times-Roman findfont 16 scalefont setfont\n";
+    $desc  = "0 0 0 setrgbcolor\n";
+    $desc .= "/Times-Roman findfont 16 scalefont setfont\n";
     $desc .= "20 $offset moveto\n";
+    
+    $amount=getAmount($parts);
+    $cred  =1;
+    $cblue =0;
+    $alc   =round($amount['alc']/$amount['amount']);
+//    $desc.=toPS("*** alc=$alc  ");
+    if( $alc <= 40 ) {
+        if( $alc <= 20 ) {
+            $cblue=1;
+            $cred=$alc/20;
+        } else {
+            $alc=$alc-20;
+            $cred=1;
+            $cblue=1-($alc/20);
+        }
+    }
+    // Unfortunately Postscript does not like german number formats
+   	$desc .= str_replace( ",", ".", "$cred 0 $cblue setrgbcolor\n" );
     $desc .= toPS( "[$cockid] $name - $type ".printAmount($parts));
+   	$desc .= "0 0 0 setrgbcolor\n";
     $offset -= 20;
     $desc .= "/Helvetica findfont 12 scalefont setfont\n";
 	foreach( $parts as $part ) {
 	    $desc .= "20 $offset moveto\n";
+
+    	switch( $part['type'] ) {
+	        case 0:
+	        	$desc .= "0.5 0 0 setrgbcolor\n";
+	        	break;
+        	case 1:
+	        	$desc .= "0 0 0 setrgbcolor\n";
+	        	break;
+        	case 2:
+	        	$desc .= "0 0.5 0 setrgbcolor\n";
+	        	break;
+	        default:
+	        	$desc .= "0 0 0.5 setrgbcolor\n";
+	        	break;
+    	}	    
 		$desc .= toPS( $part['count']." ".getMeasure( $part['measure'] ) );
 	    $desc .= "75 $offset moveto\n";
 	    $buff = $part['name'];
@@ -446,8 +481,9 @@ function psRecipe( $cockid, $offset ) {
 		$offset -= 14;
 	}
     $offset -= 10;
+   	$desc.="0 0 0 setrgbcolor\n";
     $desc .= "/Times-Roman findfont 12 scalefont setfont\n";
-    $res = toMultiLine( $recipe, $offset );
+    $res = toMultiLine( $recipe, $offset, $width );
     $offset=$res[1];
 	$desc .= $res[0];
     $offset -= 10;
@@ -459,7 +495,11 @@ function psRecipe( $cockid, $offset ) {
  * takes care of basic layout too
  * @todo: some output prettification
  */
-function booklet( $cocktails ) {
+function booklet( $cocktails, $paper=4 ) {
+    $din=array( 3368, 2360, 1684, 1180, 842, 595, 421 );
+    $height=$din[$paper];
+    $width =$din[$paper+1];
+    
     echo "%!PS-Adobe-2.0
 
 %%Creator: Foxtails
@@ -467,21 +507,21 @@ function booklet( $cocktails ) {
 %%DocumentData: Clean8Bit
 %%Origin: 0 0
 %%LanguageLevel: 2
-%%DocumentMedia: a4 595 842 0 () ()
+%%DocumentMedia: a$paper $width $height 0 () ()
 
 %%Page: 1 1\n";
 
     $page=1;
-    $offset=822;
+    $offset=$height-20; // 822;
 	if( !empty( $cocktails ) ) {
 		foreach( $cocktails as $cocktail ) {
-		    $info=psRecipe( $cocktail['id'], $offset );
+		    $info=psRecipe( $cocktail['id'], $offset, $width );
 		    if( $info[1] < 40 ) {
                 echo "showpage\n";
                 $page++;
                 echo "%%Page: $page $page\n";
-                $offset = 822;
-			    $info=psRecipe( $cocktail['id'], $offset );
+                $offset = $height-20;
+			    $info=psRecipe( $cocktail['id'], $offset, $width );
             }
             $offset=$info[1];
 			echo $info[0];
