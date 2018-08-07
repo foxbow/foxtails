@@ -5,7 +5,7 @@ $cmd='showcard';
 // Check if a command is set via HTTP GET (in a href)
 if( isset( $_GET['cmd'] ) ) $cmd=$_GET['cmd'];
 // Check if a command is set via HTTP POST (in a form)
-if( isset( $_POST['cmd'] ) ) $cmd=$_POST['cmd']; 
+if( isset( $_POST['cmd'] ) ) $cmd=$_POST['cmd'];
 
 if( $cmd == 'showcard' ) {
 	// Show current cocktail menu
@@ -67,14 +67,14 @@ if( $cmd == 'search' ) {
 
 		$cocktails=findCocktailsByParts( $ids );
 	}
-	
+
 	if( isset( $_POST['type'] ) ){
 		$typeid=$_POST['type'];
 		$type=getTypeName($typeid);
 		echo "<h2>$type</h2>\n";
 		$cocktails=findCocktailsByType( $typeid );
 	}
-	
+
 	if( isset( $_POST['noid0'] ) ) {
 		$ids=array( $_POST['noid0'], $_POST['noid1'],$_POST['noid2'],$_POST['noid3'], );
 		echo "<h2>".gettext("Cocktails ohne")." ";
@@ -100,55 +100,55 @@ if( $cmd == 'search' ) {
 	}
 
 	echo "<form action='' method='post'>\n";
-    $parts = getParts();
-    echo gettext("Suche nach Cocktails mit")."\n";
-	
+	$parts = getParts();
+	echo gettext("Suche nach Cocktails mit")."\n";
+
 	for( $i=0; $i<4; $i++ ){
-	    echo "<select name='id$i'>\n";
-   		foreach( $parts as $part ){
+		echo "<select name='id$i'>\n";
+		foreach( $parts as $part ){
 			if( 1 == $part['id'] )
-	   	    	echo "  <option selected value='".$part['id']."'>".$part['name']."\n";	
+				echo "  <option selected value='".$part['id']."'>".$part['name']."\n";
 			else
-	   	    	echo "  <option value='".$part['id']."'>".$part['name']."\n";
-    	}
-    	echo "</select>\n";
+				echo "  <option value='".$part['id']."'>".$part['name']."\n";
+		}
+		echo "</select>\n";
 	}
 
-    echo "  <input type='hidden' name='cmd' value='search'>\n";
-    echo "  <input type='submit' value='Los'>\n";
+	echo "  <input type='hidden' name='cmd' value='search'>\n";
+	echo "  <input type='submit' value='Los'>\n";
 	echo "</form>\n";
 	echo "<hr>\n";
 
 	echo "<form action='' method='post'>\n";
-    $parts = getParts();
-    echo gettext("Suche nach Cocktails ohne")."\n";
-	
+	$parts = getParts();
+	echo gettext("Suche nach Cocktails ohne")."\n";
+
 	for( $i=0; $i<4; $i++ ){
-	    echo "<select name='noid$i'>\n";
-   		foreach( $parts as $part ){
+		echo "<select name='noid$i'>\n";
+		foreach( $parts as $part ){
 			if( 1 == $part['id'] )
-	   	    	echo "  <option selected value='".$part['id']."'>".$part['name']."\n";	
+				echo "  <option selected value='".$part['id']."'>".$part['name']."\n";
 			else
-	   	    	echo "  <option value='".$part['id']."'>".$part['name']."\n";
-    	}
-    	echo "</select>\n";
+				echo "  <option value='".$part['id']."'>".$part['name']."\n";
+		}
+		echo "</select>\n";
 	}
 
-    echo "  <input type='hidden' name='cmd' value='search'>\n";
-    echo "  <input type='submit' value='".gettext("Los")."'>\n";
+	echo "  <input type='hidden' name='cmd' value='search'>\n";
+	echo "  <input type='submit' value='".gettext("Los")."'>\n";
 	echo "</form>\n";
 	echo "<hr>\n";
 
 	echo "<form action='' method='post'>\n";
-    $types = getTypes();
-    echo "<label for='type'>".gettext("Zeige alle")." </label>\n";
-    echo "<select id='type' name='type'>\n";
-   	foreach( $types as $type ){
-       	echo "  <option value='".$type['id']."'>".$type['name']."\n";
-    }
-    echo "</select>\n";
-    echo "  <input type='hidden' name='cmd' value='search'>\n";
-    echo "  <input type='submit' value='".gettext("Los")."'>\n";
+	$types = getTypes();
+	echo "<label for='type'>".gettext("Zeige alle")." </label>\n";
+	echo "<select id='type' name='type'>\n";
+	foreach( $types as $type ){
+		echo "  <option value='".$type['id']."'>".$type['name']."\n";
+	}
+	echo "</select>\n";
+	echo "  <input type='hidden' name='cmd' value='search'>\n";
+	echo "  <input type='submit' value='".gettext("Los")."'>\n";
 	echo "</form>\n";
 }
 
@@ -161,7 +161,7 @@ if( $cmd == 'parts' ) {
 	echo "<form action='' method='post'>\n";
 	echo "<input type='submit' value='".gettext("Setzen und Karte zeigen")."'><br>\n";
 	echo "<input type='hidden' name='cmd' value='showcard'>\n";
-	
+
 	echo "<center><table>\n";
 	for( $type=0; $type<5; $type++ ){
 		$col=0;
@@ -193,7 +193,7 @@ if( $cmd == 'parts' ) {
 					$col=0;
 				}
 			}
-		} 
+		}
 		if( $col > 0 ) {
 			while ( $col++ < $cols ) echo "<td></td>";
 			echo "</tr>\n";

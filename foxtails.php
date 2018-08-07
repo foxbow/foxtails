@@ -6,14 +6,14 @@ $db_name="foxtails.sq3";
 require_once( "foxtail_db.php" );
 
 if( isset($_POST['available']) ) {
-    $result="";
-    $first=1;
-    foreach( $_POST['available'] as $part ) {
+	$result="";
+	$first=1;
+	foreach( $_POST['available'] as $part ) {
 		if( $first == 0 ) $result .= " ";
 		else $first=0;
-		$result .= $part;    	
-    }
-    setSetting( "available", "$result" );
+		$result .= $part;
+	}
+	setSetting( "available", "$result" );
 }
 
 /*
@@ -30,23 +30,23 @@ putenv("LANG=" . $language); // Win32
 setlocale(LC_ALL, $language); // Linux
 
 $domain = "messages";
-bindtextdomain($domain, "./locale"); 
+bindtextdomain($domain, "./locale");
 bind_textdomain_codeset($domain, 'UTF-8');
 textdomain($domain);
 
 if( isset( $_GET['cmd'] ) ) {
-    if( $_GET['cmd'] == "qsetrate" ) {
-        rateCocktail( $_GET['cid'], $_GET['rate'] );
-        echo "rateCocktail( ".$_GET['cid'].", ".$_GET['rate']." );";
-        return;
-    }
-    if( $_GET['cmd'] == "booklet" ) {
-        header('Content-type: application/postscript');
-        header('Content-Disposition: attachment; filename="cocktails.ps"');
-       	$cocktails = getCocktailsNum();
-        booklet( $cocktails );
-        return;
-    }
+	if( $_GET['cmd'] == "qsetrate" ) {
+		rateCocktail( $_GET['cid'], $_GET['rate'] );
+		echo "rateCocktail( ".$_GET['cid'].", ".$_GET['rate']." );";
+		return;
+	}
+	if( $_GET['cmd'] == "booklet" ) {
+		header('Content-type: application/postscript');
+		header('Content-Disposition: attachment; filename="cocktails.ps"');
+		$cocktails = getCocktailsNum();
+		booklet( $cocktails );
+		return;
+	}
 }
 
 /*
@@ -75,13 +75,13 @@ global $admin, $styles;
 /*
  * static definitions and helper arrays
  */
-$amounts = array( '0.5', '1', '1.5', '2', '2.5', '3', '4', '5', '6', '7', '8', 
-        '9', '10', '11', '12', '13', '14', '15' );
-$parttypes = array( gettext("Alkohol (+ 37,5%)"), gettext("Likör"), 
-        gettext("Nicht alkoholisch"), gettext("Sonstiges"), gettext("Deko") );
+$amounts = array( '0.5', '1', '1.5', '2', '2.5', '3', '4', '5', '6', '7', '8',
+		'9', '10', '11', '12', '13', '14', '15' );
+$parttypes = array( gettext("Alkohol (+ 37,5%)"), gettext("Likör"),
+		gettext("Nicht alkoholisch"), gettext("Sonstiges"), gettext("Deko") );
 
 /*
- * This estimates the alcohol rate of the cocktail and 
+ * This estimates the alcohol rate of the cocktail and
  * returns the guessed category virgin/fruity/cocktail/strong
  */
 function computeStyleId( $parts ) {
@@ -97,13 +97,13 @@ function computeStyleId( $parts ) {
 }
 
 /*
- * estimates the volume of the cocktail. Handy for deciding 
+ * estimates the volume of the cocktail. Handy for deciding
  * what kind of glass is needed
  */
 function getAmount( $parts ) {
 	$glass=0;   // Space used in glass
-	$amount=0;  // Actual content
-	$alc=0;     // Estimated strength
+	$amount=0;  // Actual liquid content
+	$alc=0;	 // Estimated strength
 	foreach( $parts as $part ) {
 		switch( $part['part'] ) {
 		case 1: // Nichts
@@ -129,21 +129,21 @@ function getAmount( $parts ) {
 			break;
 		}
 	}
-    // round up, so a 0.21l drink will ask for a 0.3l glass	
-	$glass=round(($glass+4)/10)*10;
+	// round up, so a 0.21l drink will ask for a 0.3l glass
+	// $glass=round(($glass+4)/10)*10;
 
-	return( array( "amount" => $amount, "glass"=>$glass, "alc"=>$alc ) );
+	return( array( "total"=>$glass, "amount" => $amount, "glass"=>round(($glass+4)/10)*10, "alc"=>$alc ) );
 }
 
 /*
- * estimates the volume of the cocktail. Handy for deciding 
+ * estimates the volume of the cocktail. Handy for deciding
  * what kind of glass is needed
  */
 function printAmount( $parts ){
-    $amount=getAmount( $parts );
-    $line  = "(&nbsp;".($amount['glass']/100)."l&nbsp;/&nbsp;";
-    $line .= round($amount['alc']/$amount['amount'])."%&nbsp;)";
-    return $line;
+	$amount=getAmount( $parts );
+	$line  = "(&nbsp;".($amount['glass']/100)."l&nbsp;/&nbsp;";
+	$line .= round($amount['alc']/$amount['amount'])."%&nbsp;)";
+	return $line;
 }
 
 /*
@@ -168,8 +168,8 @@ function printPart( $part ) {
 		break;
 	}
 
-    if( isset( $part['part'] ) ) $partid=$part['part'];
-    else $partid=$part['id'];
+	if( isset( $part['part'] ) ) $partid=$part['part'];
+	else $partid=$part['id'];
 	if( !isset( $available[$partid] ) ) $desc.="background-color:#ffe0e0;";
 	$desc .= "'>".$part['name']."</span>";
 	return $desc;
@@ -182,13 +182,13 @@ function printPart( $part ) {
  *
  * @todo: see if this really makes sense..
  */
-function getRecipe( $cockid, $target=-1 ) {
+function getRecipe( $cockid, $target=0 ) {
 	global $admin;
 	$name   = getCocktailName( $cockid );
 	$type	= getCocktailType( $cockid );
 	$parts  = getCocktailParts( $cockid );
 	$recipe = getCocktailRecipe( $cockid );
-	
+
 	// print rating stars
 	if( $admin == 'on' ) {
 		$desc =  "<h3><a href='?cmd=edit&admin=on&id=$cockid'>$name</a>";
@@ -197,49 +197,49 @@ function getRecipe( $cockid, $target=-1 ) {
 		$desc =  "<h3>$cockid - $name".printRate( getCocktail( $cockid ) )."</h3>\n";
 	}
 
-    // find and apply factor
-    if ( 0 < $target ) {
-        $original=getAmount( $parts );
-        $glass =$original['glass'];
-        $amount=$original['amount'];
-        
-        // target without fix parts
-        $factor=( $target-($glass-$amount) ) / $amount;
-        
-        for( $i=0; $i<count($parts); $i++ ) {
-            // only change the basic measure (cl/oz)
-            // dashes and pieces etc. stay the same
-            if( 1 == $parts[$i]['measure'] ) {
-                $val=$factor*$parts[$i]['count'];
-                // round down to nearest .5
-                $parts[$i]['count']=round( (2*$val) )/2;
-            }
-        }
-    }
-    
-    if( -1 == $target ) {
-       	$desc .= "<b>$type</b> ".printAmount($parts);
-    } else {
-	    $desc .= "<form action='' method='get'>\n";
-       	$desc .= "<b>$type</b> ";	    
-	    $desc .= "<input type='hidden' name='id' value='$cockid'>\n";
-	    $desc .= "<input type='hidden' name='cmd' value='show'>\n";
-	    $desc .= "(&nbsp;";    
-        $amount=getAmount($parts);
-        $glass=$amount['glass'];
-       	$desc .= "<select name='glass' onchange=\"window.location='?cmd=show&id=$cockid&glass='+this.options[this.selectedIndex].value\">\n";
-       	for( $i = 10; $i <= 50; $i+=5 ) {
-		    if( $glass == $i ) { 
-          		$desc .= "  <option selected value='$i'>".($i/100)."l";
-     		} else {
-          		$desc .= "  <option value='$i'>".($i/100)."l";
-           	}
-           	$desc .= "</option>\n";
-        }
-	    $desc .= "</select>"; 
-	    $desc .= "/&nbsp;".round($amount['alc']/$amount['amount'])."%&nbsp;)";
-	    $desc .= "</form>\n";
+	// find and apply factor
+	if ( 0 < $target ) {
+		$original=getAmount( $parts );
+		$factor=$target/$original['total'];
+
+		for( $i=0; $i<count($parts); $i++ ) {
+			$val=$factor*$parts[$i]['count'];
+			// only round down to nearest .5 if we're using oz
+			if( $language == "en_US" ) {
+				$parts[$i]['count']=round( (2*$val) )/2;
+			}
+			else {
+				$parts[$i]['count']=round( $val );
+			}
+		}
+
 	}
+
+	$desc .= "<form action='' method='get'>\n";
+	$desc .= "<b>$type</b> ";
+	$desc .= "<input type='hidden' name='id' value='$cockid'>\n";
+	$desc .= "<input type='hidden' name='cmd' value='show'>\n";
+	$desc .= "(&nbsp;";
+	$amount=getAmount($parts);
+	$glass=$amount['glass'];
+	$desc .= "<select name='glass' onchange=\"window.location='?cmd=show&id=$cockid&glass='+this.options[this.selectedIndex].value\">\n";
+	if( 0 == $target ) {
+		$desc .= "  <option selected value='0'>--";
+	} else {
+		$desc .= "  <option value='0'>--";
+	}
+	for( $i = 10; $i <= 50; $i+=10 ) {
+		if( ( $target != 0 ) && ( $glass == $i ) ) {
+			$desc .= "  <option selected value='$i'>".($i/100)."l";
+		} else {
+			$desc .= "  <option value='$i'>".($i/100)."l";
+		}
+		$desc .= "</option>\n";
+	}
+	$desc .= "</select>";
+	$desc .= "/&nbsp;".round($amount['alc']/$amount['amount'])."%&nbsp;)";
+	$desc .= "</form>\n";
+
 	$desc .= "<br>\n";
 	$desc .= "<center><table border='0'>";
 	foreach( $parts as $part ) {
@@ -250,6 +250,7 @@ function getRecipe( $cockid, $target=-1 ) {
 		$desc .= "<td>".printPart( $part )."</td>";
 		$desc .= "<td>".$part['comment']."</td></tr>\n";
 	}
+	$desc .= "<tr><td>&rarr;</td><td>".($glass/100)."</td><td>Glas</td><tr>\n";
 	$desc .= "</table></center>\n";
 	$desc .= "<p>".str_replace( "\n", "<br/>", $recipe)."</p>\n";
 	return $desc;
@@ -260,37 +261,37 @@ function getRecipe( $cockid, $target=-1 ) {
  * also adds the foundation needed for changing the rating
  */
 function printRate( $cock ) {
-    $rate   = $cock['rate'];
-    if( $rate == "" ) $rate=0;
+	$rate   = $cock['rate'];
+	if( $rate == "" ) $rate=0;
 
 	$desc = "<span id='cr".$cock['id']."' title='$rate' ";
 	$desc .= "onselectstart='return false' ";
 	$desc .= "onclick='toggle(".$cock['id'].")' style='color:";
 	switch( $rate ) {
-	    case 1:
-	        $desc .= "#300;'>&nbsp;";
-	        $desc .= "&#9760;&#9734;&#9734;&#9734;&#9734;";
-	    break;
-	    case 2:
-	        $desc .= "#600;'>&nbsp;";
-	        $desc .= "&#9733;&#9733;&#9734;&#9734;&#9734;";
-	    break;
-	    case 3:
-	        $desc .= "#900;'>&nbsp;";
-	        $desc .= "&#9733;&#9733;&#9733;&#9734;&#9734;";
-	    break;
-	    case 4:
-	        $desc .= "#b00;'>&nbsp;";
-	        $desc .= "&#9733;&#9733;&#9733;&#9733;&#9734;";
-	    break;
-	    case 5:
-	        $desc .= "#f00;'>&nbsp;";
-	        $desc .= "&#9733;&#9733;&#9733;&#9733;&#9733;";
-	    break;
-	    default:
-	        $desc .= "#000;'>&nbsp;";
-	        $desc .= "&#9734;&#9734;&#9734;&#9734;&#9734;";
-	    break;
+		case 1:
+			$desc .= "#300;'>&nbsp;";
+			$desc .= "&#9760;&#9734;&#9734;&#9734;&#9734;";
+		break;
+		case 2:
+			$desc .= "#600;'>&nbsp;";
+			$desc .= "&#9733;&#9733;&#9734;&#9734;&#9734;";
+		break;
+		case 3:
+			$desc .= "#900;'>&nbsp;";
+			$desc .= "&#9733;&#9733;&#9733;&#9734;&#9734;";
+		break;
+		case 4:
+			$desc .= "#b00;'>&nbsp;";
+			$desc .= "&#9733;&#9733;&#9733;&#9733;&#9734;";
+		break;
+		case 5:
+			$desc .= "#f00;'>&nbsp;";
+			$desc .= "&#9733;&#9733;&#9733;&#9733;&#9733;";
+		break;
+		default:
+			$desc .= "#000;'>&nbsp;";
+			$desc .= "&#9734;&#9734;&#9734;&#9734;&#9734;";
+		break;
 	}
 	$desc .= "</span>";
 	return $desc;
@@ -308,7 +309,7 @@ function getShortList( $cock ) {
 	$desc = "<p>".$cock['id']." - ";
 	$desc .= "<a href='?cmd=show&id=".$cock['id']."'><b>$name</b></a> ";
 	$desc .= printAmount($parts);
-    $desc .= printRate($cock);
+	$desc .= printRate($cock);
 	$desc .= "<br>\n";
 	$desc .= "<i>( ";
 
@@ -342,7 +343,7 @@ function listCocktails( $cocktails, $cols=5 ) {
 	echo "<center><table>\n";
 	foreach( $cocktails as $cocktail ) {
 		if( 0 == $col ) echo "<tr>";
-		if( allthere( $cocktail['id'] ) ) 
+		if( allthere( $cocktail['id'] ) )
 			echo "<td id='item'>";
 		else
 			echo "<td id='noitem'>";
@@ -366,7 +367,7 @@ function listCocktails( $cocktails, $cols=5 ) {
 			echo "</tr>\n";
 			$col=0;
 		}
-	} 
+	}
 	if( $col > 0 ) {
 		while ( $col++ < $cols ) echo "<td></td>";
 		echo "</tr>\n";
@@ -380,45 +381,45 @@ function listCocktails( $cocktails, $cols=5 ) {
  * @todo: this may still create bogus stuff when brackets are involved
  */
 function toPS( $text ) {
-    $text = trim( $text );
-    $text = str_replace( "&nbsp;", " ", $text );
-    $text = str_replace( "ä", ") show /adieresis glyphshow (", $text );
-    $text = str_replace( "ö", ") show /odieresis glyphshow (", $text );
-    $text = str_replace( "ü", ") show /udieresis glyphshow (", $text );
-    $text = str_replace( "Ä", ") show /Adieresis glyphshow (", $text );
-    $text = str_replace( "Ö", ") show /Odieresis glyphshow (", $text );
-    $text = str_replace( "Ü", ") show /Udieresis glyphshow (", $text );
-    $text = str_replace( "ß", ") show /germandbls glyphshow (", $text );
-    $retval="($text) show\n";
-    return $retval;
+	$text = trim( $text );
+	$text = str_replace( "&nbsp;", " ", $text );
+	$text = str_replace( "ä", ") show /adieresis glyphshow (", $text );
+	$text = str_replace( "ö", ") show /odieresis glyphshow (", $text );
+	$text = str_replace( "ü", ") show /udieresis glyphshow (", $text );
+	$text = str_replace( "Ä", ") show /Adieresis glyphshow (", $text );
+	$text = str_replace( "Ö", ") show /Odieresis glyphshow (", $text );
+	$text = str_replace( "Ü", ") show /Udieresis glyphshow (", $text );
+	$text = str_replace( "ß", ") show /germandbls glyphshow (", $text );
+	$retval="($text) show\n";
+	return $retval;
 }
 
 /**
  * break a bunch of text up in multiple lines for output in Postscript
  */
 function toMultiLine( $text, $offset, $width ) {
-    $retval = "";
-    $buff="";
-    $lines = explode( "\n", $text );
-    foreach( $lines as $line ) {
-        $words = explode( " ", $line );
-        foreach( $words as $word ) {
-            if( ( strlen($buff) + strlen( $word ) ) > $width/6 ) { // 90 ) {
-                $retval .= "20 $offset moveto\n";
-                $retval .= toPS( $buff );
-                $offset -= 13;
-                $buff = "";
-            }
-            $buff .= $word." ";
-        }
-        if( trim($buff) != "" ) {
-            $retval .= "20 $offset moveto\n";
-            $retval .= toPS( $buff );
-            $offset -= 13;
-            $buff="";
-        }            
-    }
-    return array( $retval, $offset );
+	$retval = "";
+	$buff="";
+	$lines = explode( "\n", $text );
+	foreach( $lines as $line ) {
+		$words = explode( " ", $line );
+		foreach( $words as $word ) {
+			if( ( strlen($buff) + strlen( $word ) ) > $width/6 ) { // 90 ) {
+				$retval .= "20 $offset moveto\n";
+				$retval .= toPS( $buff );
+				$offset -= 13;
+				$buff = "";
+			}
+			$buff .= $word." ";
+		}
+		if( trim($buff) != "" ) {
+			$retval .= "20 $offset moveto\n";
+			$retval .= toPS( $buff );
+			$offset -= 13;
+			$buff="";
+		}
+	}
+	return array( $retval, $offset );
 }
 
 /**
@@ -430,63 +431,63 @@ function psRecipe( $cockid, $offset, $width ) {
 	$parts  = getCocktailParts( $cockid );
 	$recipe = getCocktailRecipe( $cockid );
 
-    $offset -= 16;
-    $desc  = "0 0 0 setrgbcolor\n";
-    $desc .= "/Times-Roman findfont 16 scalefont setfont\n";
-    $desc .= "20 $offset moveto\n";
-    
-    $amount=getAmount($parts);
-    $cred  =1;
-    $cblue =0;
-    $alc   =round($amount['alc']/$amount['amount']);
-//    $desc.=toPS("*** alc=$alc  ");
-    if( $alc <= 40 ) {
-        if( $alc <= 20 ) {
-            $cblue=1;
-            $cred=$alc/20;
-        } else {
-            $alc=$alc-20;
-            $cred=1;
-            $cblue=1-($alc/20);
-        }
-    }
-    // Unfortunately Postscript does not like german number formats
-   	$desc .= str_replace( ",", ".", "$cred 0 $cblue setrgbcolor\n" );
-    $desc .= toPS( "[$cockid] $name - $type ".printAmount($parts));
-   	$desc .= "0 0 0 setrgbcolor\n";
-    $offset -= 20;
-    $desc .= "/Helvetica findfont 12 scalefont setfont\n";
-	foreach( $parts as $part ) {
-	    $desc .= "20 $offset moveto\n";
+	$offset -= 16;
+	$desc  = "0 0 0 setrgbcolor\n";
+	$desc .= "/Times-Roman findfont 16 scalefont setfont\n";
+	$desc .= "20 $offset moveto\n";
 
-    	switch( $part['type'] ) {
-	        case 0:
-	        	$desc .= "0.5 0 0 setrgbcolor\n";
-	        	break;
-        	case 1:
-	        	$desc .= "0 0 0 setrgbcolor\n";
-	        	break;
-        	case 2:
-	        	$desc .= "0 0.5 0 setrgbcolor\n";
-	        	break;
-	        default:
-	        	$desc .= "0 0 0.5 setrgbcolor\n";
-	        	break;
-    	}	    
+	$amount=getAmount($parts);
+	$cred  =1;
+	$cblue =0;
+	$alc   =round($amount['alc']/$amount['amount']);
+//	$desc.=toPS("*** alc=$alc  ");
+	if( $alc <= 40 ) {
+		if( $alc <= 20 ) {
+			$cblue=1;
+			$cred=$alc/20;
+		} else {
+			$alc=$alc-20;
+			$cred=1;
+			$cblue=1-($alc/20);
+		}
+	}
+	// Unfortunately Postscript does not like german number formats
+	$desc .= str_replace( ",", ".", "$cred 0 $cblue setrgbcolor\n" );
+	$desc .= toPS( "[$cockid] $name - $type ".printAmount($parts));
+	$desc .= "0 0 0 setrgbcolor\n";
+	$offset -= 20;
+	$desc .= "/Helvetica findfont 12 scalefont setfont\n";
+	foreach( $parts as $part ) {
+		$desc .= "20 $offset moveto\n";
+
+		switch( $part['type'] ) {
+			case 0:
+				$desc .= "0.5 0 0 setrgbcolor\n";
+				break;
+			case 1:
+				$desc .= "0 0 0 setrgbcolor\n";
+				break;
+			case 2:
+				$desc .= "0 0.5 0 setrgbcolor\n";
+				break;
+			default:
+				$desc .= "0 0 0.5 setrgbcolor\n";
+				break;
+		}
 		$desc .= toPS( $part['count']." ".getMeasure( $part['measure'] ) );
-	    $desc .= "75 $offset moveto\n";
-	    $buff = $part['name'];
+		$desc .= "75 $offset moveto\n";
+		$buff = $part['name'];
 		if( $part['comment'] != "" ) $buff .= " - ".$part['comment'];
 		$desc .= toPS($buff);
 		$offset -= 14;
 	}
-    $offset -= 10;
-   	$desc.="0 0 0 setrgbcolor\n";
-    $desc .= "/Times-Roman findfont 12 scalefont setfont\n";
-    $res = toMultiLine( $recipe, $offset, $width );
-    $offset=$res[1];
+	$offset -= 10;
+	$desc.="0 0 0 setrgbcolor\n";
+	$desc .= "/Times-Roman findfont 12 scalefont setfont\n";
+	$res = toMultiLine( $recipe, $offset, $width );
+	$offset=$res[1];
 	$desc .= $res[0];
-    $offset -= 10;
+	$offset -= 10;
 	return array( $desc, $offset );
 }
 
@@ -496,11 +497,11 @@ function psRecipe( $cockid, $offset, $width ) {
  * @todo: some output prettification
  */
 function booklet( $cocktails, $paper=4 ) {
-    $din=array( 3368, 2360, 1684, 1180, 842, 595, 421 );
-    $height=$din[$paper];
-    $width =$din[$paper+1];
-    
-    echo "%!PS-Adobe-2.0
+	$din=array( 3368, 2360, 1684, 1180, 842, 595, 421 );
+	$height=$din[$paper];
+	$width =$din[$paper+1];
+
+	echo "%!PS-Adobe-2.0
 
 %%Creator: Foxtails
 %%Title: Cocktails
@@ -511,35 +512,35 @@ function booklet( $cocktails, $paper=4 ) {
 
 %%Page: 1 1\n";
 
-    $page=1;
-    $offset=$height-20; // 822;
+	$page=1;
+	$offset=$height-20; // 822;
 	if( !empty( $cocktails ) ) {
 		foreach( $cocktails as $cocktail ) {
-		    $info=psRecipe( $cocktail['id'], $offset, $width );
-		    if( $info[1] < 40 ) {
-                echo "showpage\n";
-                $page++;
-                echo "%%Page: $page $page\n";
-                $offset = $height-20;
-			    $info=psRecipe( $cocktail['id'], $offset, $width );
-            }
-            $offset=$info[1];
+			$info=psRecipe( $cocktail['id'], $offset, $width );
+			if( $info[1] < 40 ) {
+				echo "showpage\n";
+				$page++;
+				echo "%%Page: $page $page\n";
+				$offset = $height-20;
+				$info=psRecipe( $cocktail['id'], $offset, $width );
+			}
+			$offset=$info[1];
 			echo $info[0];
 		}
 	}
 
-    echo "showpage
+	echo "showpage
 %%EOF\n";
-    return;
+	return;
 }
 
 $admin='off';
 if( isset($_POST['admin']) ) $admin=$_POST['admin'];
 if( isset($_GET['admin']) ) $admin=$_GET['admin'];
 if( $admin=='on' ) {
-	require_once( "edit.php" ); 
+	require_once( "edit.php" );
 } else {
-	require_once( "show.php" ); 
+	require_once( "show.php" );
 }
 ?>
 

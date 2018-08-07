@@ -5,12 +5,12 @@ function getTranslations(){
 	$langs = array();
 	if ( $handle = opendir( './locale' ) ) {
 		while (false !== ($entry = readdir( $handle ) ) ) {
-        	if ( preg_match("#_#", $entry) ) {
-            	$langs[]=$entry;
-        	}
+			if ( preg_match("#_#", $entry) ) {
+				$langs[]=$entry;
+			}
 		}
-	    closedir($handle);
-    }else{
+		closedir($handle);
+	}else{
 		trigger_error("Verzeichnisfehler", E_USER_ERROR);
 	}
 	return $langs;
@@ -19,16 +19,16 @@ function getTranslations(){
 function selectLanguage() {
 	$langs=getTranslations();
 	echo "<form action='' method='post'>\n";
-	echo "Select locale:";	
-    echo "<select name='lang'>\n";
+	echo "Select locale:";
+	echo "<select name='lang'>\n";
 	foreach( $langs as $lang ) {
 		if( "de" == $lang )
-			echo "  <option selected value='$lang'>$lang\n";	
+			echo "  <option selected value='$lang'>$lang\n";
 		else
-			echo "  <option value='$lang'>$lang\n";	
-    }
-    echo "</select>\n";
-    echo "  <input type='submit' value='OK'>\n";
+			echo "  <option value='$lang'>$lang\n";
+	}
+	echo "</select>\n";
+	echo "  <input type='submit' value='OK'>\n";
 	echo "</form>\n";
 	echo "</BODY></HTML>\n";
 	exit();
@@ -40,23 +40,23 @@ function selectLanguage() {
  * user/admin to do that.
  **/
 function db_open(){
-    global $db_name, $cid;
+	global $db_name, $cid;
 	if( ! isset( $cid ) ) {
 		if( file_exists( $db_name ) ) {
-		    $cid = new PDO( "sqlite:".$db_name );
+			$cid = new PDO( "sqlite:".$db_name );
 		} else {
 			if( isset( $_POST['lang'] ) ) {
-			    $cid = new PDO( "sqlite:".$db_name );
-			    db_init();
+				$cid = new PDO( "sqlite:".$db_name );
+				db_init();
 			} else {
 				selectLanguage();
 			}
 		}
 	}
-	
-    if($cid === false) trigger_error(_("Datenbankfehler"), E_USER_ERROR);
 
-    return $cid;
+	if($cid === false) trigger_error(_("Datenbankfehler"), E_USER_ERROR);
+
+	return $cid;
 }
 
 /**
@@ -66,14 +66,14 @@ function db_open(){
 function db_exec( $SQL, $param=array() ){
 	$cid=db_open();
 	$cid->beginTransaction();
-    $res = $cid->prepare( $SQL );
+	$res = $cid->prepare( $SQL );
 	if( ( false === $res ) || ( false === $res->execute( $param ) ) ) {
-    	echo( $SQL."<br>\n");
-      	print_r( $cid->errorInfo() );
+		echo( $SQL."<br>\n");
+		print_r( $cid->errorInfo() );
 		$cid->rollback();
 	 } else {
-    	$cid->commit();
-    }
+		$cid->commit();
+	}
 	return $res->fetchAll();
 }
 
@@ -81,7 +81,7 @@ function db_exec( $SQL, $param=array() ){
  * Initialize the basics
  **/
 function db_init(){
-    $cid = db_open();
+	$cid = db_open();
 	$cid->beginTransaction();
 	$cid->exec( "CREATE TABLE cocktail ( id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR( 32 ) UNIQUE, recipe VARCHAR( 1024 ), type INT, ice INT, rate INT );" );
 	$cid->exec( "CREATE TABLE recipe ( cockid INTEGER, measure INTEGER, count INTEGER, part INTEGER );" );
@@ -89,8 +89,8 @@ function db_init(){
 	$cid->exec( "CREATE TABLE part ( id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR( 32 ) UNIQUE, comment VARCHAR( 128 ), type INTEGER );" );
 	$cid->exec( "CREATE TABLE type ( id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR( 32 ) UNIQUE );" );
 	$cid->exec( "CREATE TABLE settings ( name VARCHAR( 32 ) PRIMARY KEY UNIQUE, value VARCHAR( 32 ) );" );
-    $cid->commit();
-    newMeasure( _('cl') );
+	$cid->commit();
+	newMeasure( _('cl') );
 	newMeasure( _('Spritzer') );
 	newMeasure( _('Löffel') );
 	newMeasure( _('Stück') );
@@ -196,7 +196,7 @@ function getPartsByType( $type ) {
 			$part['num']=0;
 		}
 	}
-	/** endit */	
+	/** endit */
 	return $res;
 }
 
@@ -245,27 +245,27 @@ function getCocktailName( $cockid ) {
 	$res = db_exec( "SELECT name FROM cocktail WHERE id=?;", array( $cockid ) );
 	if( isset( $res[0]['name'] ) ) return $res[0]['name'];
 	else return _("Unbekannt");
-}  
+}
 
 function getCocktailType( $cockid ) {
 	$type= 1;
 	$res = db_exec( "SELECT type FROM cocktail WHERE id=?;", array( $cockid ) );
 	if( isset( $res[0]['type'] ) ) $type = $res[0]['type'];
 	return getTypeName( $type );
-}  
+}
 
 function getCocktailTypeID( $cockid ) {
 	$type= 1;
 	$res = db_exec( "SELECT type FROM cocktail WHERE id=?;", array( $cockid ) );
 	if( isset( $res[0]['type'] ) ) $type = $res[0]['type'];
 	return $type;
-}  
+}
 
 function getCocktailID( $name ) {
 	$res = db_exec( "SELECT id FROM cocktail WHERE name like ?;", array( $name ) );
 	if( isset( $res[0]['id'] ) ) return $res[0]['id'];
 	else return 0;
-}  
+}
 
 function getCocktailRecipe( $cockid ) {
 	$res = db_exec( "SELECT recipe FROM cocktail WHERE id=?;", array( $cockid ) );
@@ -332,7 +332,7 @@ function findCocktailsWithout( $noparts ) {
 				if( $cpart['part'] == $part ) $in=1;
 			}
 		}
-		if( $in == 0 ) { 
+		if( $in == 0 ) {
 			$result[]=$cocktail;
 			$num++;
 		}
@@ -356,7 +356,7 @@ function invertParts( $list ) {
 	$result=array();
 	foreach( $parts as $part ) $result[$part['id']]=$part['id'];
 	foreach( $list as $part ) unset( $result[$part] );
-	return $result;	
+	return $result;
 }
 
 /**
@@ -375,7 +375,7 @@ function findCocktailsByTypeAndParts( $type, $available ){
 				if( $cpart['part'] == $part ) $in=1;
 			}
 		}
-		if( $in == 0 ) { 
+		if( $in == 0 ) {
 			$result[]=$cocktail;
 		}
 	}

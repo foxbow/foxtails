@@ -1,7 +1,7 @@
 <?php
 $cmd='all';
 if( isset( $_GET['cmd'] ) ) $cmd=$_GET['cmd'];
-if( isset( $_POST['cmd'] ) ) $cmd=$_POST['cmd']; 
+if( isset( $_POST['cmd'] ) ) $cmd=$_POST['cmd'];
 
 if( !isset( $password ) || $password!=md5("foxtail") ) {
 	echo "<h2>".gettext("Unlock")."</h2>\n";
@@ -12,7 +12,7 @@ if( !isset( $password ) || $password!=md5("foxtail") ) {
 	echo "  <input type='hidden' name='cmd' value='$cmd'>\n";
 	echo "  <input type='submit' value='okay'>\n";
 	echo "</form>\n";
-	
+
 	echo "<div id='linklist'>\n";
 	echo "<a href='?admin=off'>".gettext("Anzeigen")."</a>";
 	echo "</div>\n";
@@ -89,22 +89,22 @@ if( $cmd == 'edpart' ) {
 	$partid=$_GET['part'];
 	$part = getPart( $partid );
 	echo "<h2>".printPart( $part )."</h2>\n";
-    echo "<form action='' method='post'>\n";
-    echo "  Name: <input name='name' type='text' value='".$part['name']."'><br>\n";
-    echo "	Kommentar: <input name='comment' type='text' value='".$part['comment']."'><br>\n";
-    echo "  <input type='hidden' name='id' value='$partid'>\n";
+	echo "<form action='' method='post'>\n";
+	echo "  Name: <input name='name' type='text' value='".$part['name']."'><br>\n";
+	echo "	Kommentar: <input name='comment' type='text' value='".$part['comment']."'><br>\n";
+	echo "  <input type='hidden' name='id' value='$partid'>\n";
 	echo "  <input type='hidden' name='admin' value='on'>\n";
-    echo "  <input type='hidden' name='cmd' value='setPart'>\n";
-    echo "  <select name='type'>\n";
+	echo "  <input type='hidden' name='cmd' value='setPart'>\n";
+	echo "  <select name='type'>\n";
 	for( $type=0; $type<5; $type++ ) {
 		if( $part['type'] == $type )
-	   	    echo "  <option selected value='$type'>".$parttypes[ $type ]."\n";	
+			echo "  <option selected value='$type'>".$parttypes[ $type ]."\n";
 		else
-	   	    echo "  <option value='$type'>".$parttypes[ $type ]."\n";	
- 	}
-   	echo "</select>\n";
-    echo "  <input type='submit' value='okay'>\n";
-    echo "</form>\n";
+			echo "  <option value='$type'>".$parttypes[ $type ]."\n";
+	}
+	echo "</select>\n";
+	echo "  <input type='submit' value='okay'>\n";
+	echo "</form>\n";
 
 }
 
@@ -152,14 +152,14 @@ if( $cmd == 'parts' ) {
 					$col=0;
 				}
 			}
-		} 
+		}
 		if( $col > 0 ) {
 			while ( $col++ < $cols ) echo "<td></td>";
 			echo "</tr>\n";
 		}
 	}
 	echo "</table></center>\n";
-	
+
 	echo "<h2>".gettext("Neue Zutat")."</h2>\n";
 	echo "<form action='' method='post'>\n";
 	echo "  Name: <input name='name' type='text'><br>\n";
@@ -169,11 +169,11 @@ if( $cmd == 'parts' ) {
 	echo "  <select name='type'>\n";
 	for( $type=0; $type<5; $type++ ) {
 		if( 0 == $type )
-	   	    echo "  <option selected value='$type'>".$parttypes[ $type ]."\n";	
+			echo "  <option selected value='$type'>".$parttypes[ $type ]."\n";
 		else
-	   	    echo "  <option value='$type'>".$parttypes[ $type ]."\n";	
- 	}
-   	echo "</select>\n";
+			echo "  <option value='$type'>".$parttypes[ $type ]."\n";
+	}
+	echo "</select>\n";
 	echo "  <input type='submit' value='okay'>\n";
 	echo "</form>\n";
 }
@@ -200,7 +200,7 @@ if( $cmd == 'add' ) {
 	} else {
 		echo "<h2>".gettext("Den Cocktail")." <a href='?cmd=show&id=$id'>$name'</a> ".gettext("gibt es schon")."!</h2>\n";
 	}
-	
+
 	$cmd = 'all';
 }
 
@@ -226,7 +226,7 @@ if( $cmd == 'change' ) {
 		$type=computeStyleId( $parts );
 	}
 	if( $type != $otype ) {
-		setCocktailType( $id, $type );		
+		setCocktailType( $id, $type );
 	}
 
 	$cmd = 'show';
@@ -264,47 +264,47 @@ if( $cmd == 'edit' ) {
 		$types = getTypes();
 		$ctype = getCocktailTypeID( $cockid );
 		echo "  <label for='type'>".gettext("Ist ein")."</label>\n";
-	   	echo "  <select id='type' name='type'>\n";
+		echo "  <select id='type' name='type'>\n";
 		foreach( $types as $type ){
-			if( $ctype == $type['id'] ) { 
-		 		echo "  <option selected value='".$type['id']."'>".$type['name']."\n";
+			if( $ctype == $type['id'] ) {
+				echo "  <option selected value='".$type['id']."'>".$type['name']."\n";
 			} else {
-		   		echo "  <option value='".$type['id']."'>".$type['name']."\n";
-		   	}
+				echo "  <option value='".$type['id']."'>".$type['name']."\n";
+			}
 		}
-	   	echo "</select><br>\n"; 
+		echo "</select><br>\n";
 
 		$recipe=getCocktailParts( $cockid );
 
-        echo "<div id='parts'>\n";
-        $i=0;
-        while( isset( $recipe[$i] ) ) {
-		    echo "<div id='parts$i'>\n";
-            if( isset( $recipe[$i] ) ) $amount=$recipe[$i]['count'];
-            else $amount=0;
-            echo "<input type='number' name='count$i' min='0.5' max='15' step='0.5' value='$amount' style='width:3em;'>\n";
+		echo "<div id='parts'>\n";
+		$i=0;
+		while( isset( $recipe[$i] ) ) {
+			echo "<div id='parts$i'>\n";
+			if( isset( $recipe[$i] ) ) $amount=$recipe[$i]['count'];
+			else $amount=0;
+			echo "<input type='number' name='count$i' min='0.5' max='15' step='0.5' value='$amount' style='width:3em;'>\n";
 			echo "<select name='measure$i'>\n";
-	   		foreach( $measures as $measure ){
+			foreach( $measures as $measure ){
 				if( isset( $recipe[$i] ) ) $check=$recipe[$i]['measure'];
 				else $check=1;
-	   			if( $check == $measure['id'] ) { 
+				if( $check == $measure['id'] ) {
 					echo "  <option selected value='".$measure['id']."'>".$measure['name']."\n";
-	   			} else {
+				} else {
 					echo "  <option value='".$measure['id']."'>".$measure['name']."\n";
 				}
-		    }
-			echo "</select>\n"; 
+			}
+			echo "</select>\n";
 			echo "<select name='part$i'>\n";
-	   		foreach( $parts as $part ){
+			foreach( $parts as $part ){
 				if( isset( $recipe[$i] ) ) $check=$recipe[$i]['part'];
 				else $check=1;
-				
-	   			if( $check == $part['id'] ) { 
-		    		echo "  <option selected value='".$part['id']."'>".$part['name']."\n";
-	   			} else {
-		    		echo "  <option value='".$part['id']."'>".$part['name']."\n";
-		    	}
-		    }
+
+				if( $check == $part['id'] ) {
+					echo "  <option selected value='".$part['id']."'>".$part['name']."\n";
+				} else {
+					echo "  <option value='".$part['id']."'>".$part['name']."\n";
+				}
+			}
 			echo "</select>\n";
 			echo "</div>\n";
 			$i++;
@@ -329,34 +329,34 @@ if( $cmd == 'new' ) {
 	echo "<h2>".gettext("Neuen Cocktail eingeben")."</h2>\n";
 
 	echo "<form action='' method='post'>\n";
-    echo "  <label for='name'>Name:</label>\n";
-    echo "  <input id='name' name='name' type='text' size='30'>\n";
-    $measures = getMeasures();
-    $parts = getParts();
-	echo "<br>\n"; 
-	
-    echo "<div id='parts'>\n";
-    for( $i=0; $i<3; $i++ ) {
-	    echo "<div id='parts$i'>\n";
-        echo "<input type='number' name='count$i' min='0.5' max='15' step='0.5' value='1' style='width:3em;'>\n";
+	echo "  <label for='name'>Name:</label>\n";
+	echo "  <input id='name' name='name' type='text' size='30'>\n";
+	$measures = getMeasures();
+	$parts = getParts();
+	echo "<br>\n";
+
+	echo "<div id='parts'>\n";
+	for( $i=0; $i<3; $i++ ) {
+		echo "<div id='parts$i'>\n";
+		echo "<input type='number' name='count$i' min='0.5' max='15' step='0.5' value='1' style='width:3em;'>\n";
 		echo "<select name='measure$i'>\n";
-	   	foreach( $measures as $measure ){
-   			if( 1 == $measure['id'] ) { 
+		foreach( $measures as $measure ){
+			if( 1 == $measure['id'] ) {
 				echo "  <option selected value='".$measure['id']."'>".$measure['name']."\n";
-   			} else {
+			} else {
 				echo "  <option value='".$measure['id']."'>".$measure['name']."\n";
 			}
-	    }
-		echo "</select>\n"; 
-		
+		}
+		echo "</select>\n";
+
 		echo "<select name='part$i'>\n";
-   		foreach( $parts as $part ){
-   			if( 1 == $part['id'] ) { 
-                echo "  <option selected value='".$part['id']."'>".$part['name']."\n";
-	   		} else {
-		    	echo "  <option value='".$part['id']."'>".$part['name']."\n";
-		    }
-	    }
+		foreach( $parts as $part ){
+			if( 1 == $part['id'] ) {
+				echo "  <option selected value='".$part['id']."'>".$part['name']."\n";
+			} else {
+				echo "  <option value='".$part['id']."'>".$part['name']."\n";
+			}
+		}
 		echo "</select>\n";
 		echo "</div>\n";
 	}
@@ -364,15 +364,15 @@ if( $cmd == 'new' ) {
 	echo "<br>\n";
 	echo "<input id='addrow' type='button' onclick='addPartField()' value='Neue Zeile'>\n";
 	echo "<br>\n";
-	
+
 	echo "  <label for='kommentar'>".gettext("Zubereitung").":</label><br>\n";
 	echo "  <textarea id='kommentar' name='recipe' cols='80' rows='10'>";
 	echo gettext("Alle Zutaten mit Eis im Shaker mixen und in ein Glas auf Eis abseihen.");
 	echo "</textarea><br>\n";
 	echo "  <input type='hidden' name='admin' value='on'>\n";
-    echo "  <input type='hidden' name='cmd' value='add'>\n";
+	echo "  <input type='hidden' name='cmd' value='add'>\n";
 	echo "  <input type='hidden' id='lines' name='lines' value='$i'>\n";
-    echo "  <input type='submit' value='okay'>\n";
+	echo "  <input type='submit' value='okay'>\n";
 	echo "</form>\n";
 }
 
